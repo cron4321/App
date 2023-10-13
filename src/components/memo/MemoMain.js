@@ -1,0 +1,41 @@
+import React from "react";
+import styled from "styled-components";
+
+function MemoMain(props) {
+  const { memos, openEditModal } = props;
+
+  return (
+    <MainContainer>
+      {memos.map((memo, index) => (
+        <Memo key={index} onClick={() => openEditModal(index)}>
+          <MemoTitle>{memo.title}</MemoTitle>
+          <MemoContent>{memo.content}</MemoContent>
+        </Memo>
+      ))}
+    </MainContainer>
+  );
+}
+
+const MainContainer = styled.main`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+`;
+
+const Memo = styled.div`
+  width: 159px;
+  height: 225px;
+  border-radius: 12px;
+  border: 1px solid #0074e4;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  position: relative;
+`;
+
+const MemoTitle = styled.h3``;
+
+const MemoContent = styled.p``;
+
+export default MemoMain;

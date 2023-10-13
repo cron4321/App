@@ -4,10 +4,11 @@ import styled from "styled-components";
 import Header from "../components/home/Header";
 import AddIcon from "@mui/icons-material/Add";
 import ReactModal from "react-modal";
+import CloseIcon from "@mui/icons-material/Close";
 
 Modal.setAppElement("#root");
 
-function MemoApp() {
+function MemoPage() {
   const [memos, setMemos] = useState([]);
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [modalEditMode, setModalEditMode] = useState(false);
@@ -79,24 +80,43 @@ function MemoApp() {
         isOpen={modalIsOpen}
         onRequestClose={closeModal}
         contentLabel={modalEditMode ? "메모 편집 모달" : "메모 추가 모달"}
+        style={{
+          overlay: {
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+          },
+          content: {
+            maxWidth: "70%",
+            maxHeight: "70%",
+            margin: "auto",
+            border: "1px solid #0074e4",
+            borderRadius: "12px",
+            margin: "24px",
+          },
+        }}
       >
         <ModalContainer>
-          <Modaltitle
-            type="text"
-            placeholder="제목"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-          <ModalContent
-            placeholder="내용"
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-          />
+          <ModalHeader>
+            <Modaltitle
+              type="text"
+              placeholder="제목"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+            />
+            <ExitButton onClick={closeModal}>
+              <CloseIcon sx={{ width: 30, height: 30 }} />
+            </ExitButton>
+          </ModalHeader>
+          <ModalMain>
+            <ModalContent
+              placeholder="내용"
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+            />
+          </ModalMain>
           <ModalFooter>
             <SaveButton onClick={addMemo}>
               {modalEditMode ? "수정" : "저장"}
             </SaveButton>
-            <ExitButton onClick={closeModal}>닫기</ExitButton>
             <DeleteButton on onClick={deletMemo}>
               삭제
             </DeleteButton>
@@ -118,8 +138,7 @@ const MemoHeader = styled.header`
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  background-color: #ffffff;
-  color: #ffffff;
+  background-color: #f9f9f9;
 `;
 const Title = styled.h1`
   margin: 0;
@@ -141,12 +160,16 @@ const AddButton = styled.div`
 
 const Main = styled.main`
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
+  width: 100%;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 16px;
+  place-items: center;
+  background-color: #f9f9f9;
 `;
 
 const Memo = styled.div`
-  width: 159px;
+  width: 100%;
+  max-width: 160px;
   height: 225px;
   border-radius: 12px;
   border: 1px solid #0074e4;
@@ -155,6 +178,7 @@ const Memo = styled.div`
   flex-direction: column;
   padding: 10px;
   position: relative;
+  background-color: #ffffff;
 `;
 
 const MemoTitle = styled.h3``;
@@ -168,29 +192,55 @@ const ModalContainer = styled.div`
   height: 100%;
 `;
 
+const ModalHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 12px;
+`;
+
+const ExitButton = styled.div``;
+
 const Modaltitle = styled.input`
   margin: 10px 0;
   padding: 10px;
   border: 1px solid #0074e4;
-  border-radius: 5px;
-  width: 80%;
+  border-radius: 12px;
+  width: 100%;
 `;
-
-const ModalContent = styled.textarea`
+const ModalMain = styled.div`
+  display: flex;
+  width: 100%;
+  height: 100%;
   margin: 10px 0;
+`;
+const ModalContent = styled.textarea`
   padding: 10px;
   border: 1px solid #0074e4;
-  border-radius: 5px;
-  width: 80%;
-  height: 60%;
+  border-radius: 12px;
+  width: 100%;
+  height: 100%;
 `;
 
-export default MemoApp;
+const ModalFooter = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin: 10px;
+`;
 
-const ModalFooter = styled.div``;
+const SaveButton = styled.button`
+  margin-top: 20px 0;
+  width: 54px;
+  height: 30px;
+`;
 
-const SaveButton = styled.button``;
+const DeleteButton = styled.button`
+  margin-top: 20px 0;
+  width: 54px;
+  height: 30px;
+`;
 
-const ExitButton = styled.button``;
-
-const DeleteButton = styled.button``;
+export default MemoPage;
