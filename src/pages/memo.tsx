@@ -1,15 +1,19 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import Modal from "react-modal";
 import styled from "styled-components";
 import Header from "../components/home/Header";
 import AddIcon from "@mui/icons-material/Add";
-import ReactModal from "react-modal";
 import CloseIcon from "@mui/icons-material/Close";
 
 Modal.setAppElement("#root");
 
+interface Memo {
+  title: string;
+  content: string;
+}
+
 function MemoPage() {
-  const [memos, setMemos] = useState([]);
+  const [memos, setMemos] = useState<Memo[]>([]);
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [modalEditMode, setModalEditMode] = useState(false);
   const [modalMemoIndex, setModalMemoIndex] = useState(-1);
@@ -23,7 +27,7 @@ function MemoPage() {
     setContent("");
   };
 
-  const openEditModal = (index) => {
+  const openEditModal = (index: number) => {
     setModalIsOpen(true);
     setModalEditMode(true);
     setModalMemoIndex(index);
@@ -90,7 +94,6 @@ function MemoPage() {
             margin: "auto",
             border: "1px solid #0074e4",
             borderRadius: "12px",
-            margin: "24px",
           },
         }}
       >
@@ -117,9 +120,7 @@ function MemoPage() {
             <SaveButton onClick={addMemo}>
               {modalEditMode ? "수정" : "저장"}
             </SaveButton>
-            <DeleteButton on onClick={deletMemo}>
-              삭제
-            </DeleteButton>
+            <DeleteButton onClick={deletMemo}>삭제</DeleteButton>
           </ModalFooter>
         </ModalContainer>
       </Modal>
@@ -161,7 +162,7 @@ const AddButton = styled.div`
 const Main = styled.main`
   display: grid;
   width: 100%;
-  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: 16px;
   place-items: center;
   background-color: #f9f9f9;
@@ -228,19 +229,23 @@ const ModalFooter = styled.div`
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  margin: 10px;
+  margin: 30px 10px 10px 10px;
 `;
 
 const SaveButton = styled.button`
-  margin-top: 20px 0;
-  width: 54px;
-  height: 30px;
+  border-radius: 12px;
+  background-color: #0074e4;
+  border: none;
+  width: 63px;
+  height: 35px;
 `;
 
 const DeleteButton = styled.button`
-  margin-top: 20px 0;
-  width: 54px;
-  height: 30px;
+  border-radius: 12px;
+  background-color: #0074e4;
+  border: none;
+  width: 63px;
+  height: 35px;
 `;
 
 export default MemoPage;

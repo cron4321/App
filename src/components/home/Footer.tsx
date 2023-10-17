@@ -1,9 +1,10 @@
 import styled from "styled-components";
 import AddIcon from "@mui/icons-material/Add";
+import { Itemprops } from "../../Itemprops";
 
 function Footer() {
   const numberOfFooterContents = 10;
-  const createFooterContent = (index) => (
+  const createFooterContent = (index: Itemprops['index']) => (
     <FooterContent key={index}></FooterContent>
   );
   return (
@@ -29,7 +30,6 @@ export default Footer;
 
 const FooterContainer = styled.div`
   display: flex;
-  min-width: 390px;
   background-color: #f9f9f9;
   padding: 16px 24px 36px 24px;
 `;
@@ -46,7 +46,6 @@ const FooterForm = styled.div`
 
 const FooterHeader = styled.div`
   display: flex;
-  width: 100%;
   justify-content: space-between;
 `;
 
@@ -72,7 +71,6 @@ const AddButton = styled.div`
 const FooterBody = styled.div`
   display: flex;
   justify-content: space-between;
-  min-width: 342px;
   min-height: 145px;
   overflow: hidden;
   margin: 0 9px 0px 9px;
