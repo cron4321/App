@@ -1,8 +1,8 @@
-import React from "react";
 import styled from "styled-components";
-import { Modal } from "@mui/material";
+import ReactModal from "react-modal";
+import { Itemprops } from "../../Itemprops";
 
-function MemoModal(props) {
+function MemoModal(props: Itemprops) {
   const {
     modalIsOpen,
     closeModal,

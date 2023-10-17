@@ -1,8 +1,8 @@
-import React from "react";
 import styled from "styled-components";
 import AddIcon from "@mui/icons-material/Add";
+import { Itemprops } from "../../Itemprops";
 
-function MemoHeader(props) {
+function MemoHeader(props: Itemprops) {
   const { openModal } = props;
 
   return (

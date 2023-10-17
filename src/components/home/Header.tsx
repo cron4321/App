@@ -18,10 +18,10 @@ function Header() {
 export default Header;
 
 const HeaderContainer = styled.header`
+  display: flex;
   width: 100%;
   height: 56px;
   background: #0074e4;
-  display: flex;
   align-items: center;
   justify-content: space-between;
 `;
