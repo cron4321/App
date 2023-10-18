@@ -12,8 +12,8 @@ function App() {
         <Route path="/" element={<HomePage />}></Route>
         <Route path="/memo" element={<MemoPage />}></Route>
         <Route path="/board" element={<BoardPage />}></Route>
-        <Route path="/Login" element={<LoginPage />}></Route>
-        <Route path="/Signup" element={<Signup />}></Route>
+        <Route path="/login" element={<LoginPage />}></Route>
+        <Route path="/signup" element={<Signup />}></Route>
       </Routes>
     </BrowserRouter>
   );
