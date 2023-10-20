@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Container, Header, SignupPage } from '../styles/Loginstyled';
 import LoginForm from '../components/Login/LoginForm';
+import styled from 'styled-components';
 
 function LoginPage() {
   const [email, setEmail] = useState('');
@@ -27,9 +28,14 @@ function LoginPage() {
     }
   };
 
+  const HomeLink = styled(Link)`
+  text-decoration: none; 
+  color: inherit; 
+`;
+
   return (
     <Container>
-      <Header>우리 학교 알리미<br />로그인</Header>
+      <Header><HomeLink to="/">우리 학교 알리미</HomeLink><br />로그인</Header>
       <LoginForm
         email={email}
         password={password}

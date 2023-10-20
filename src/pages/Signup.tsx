@@ -4,6 +4,7 @@ import UserForm from '../components/Signup/User';
 import VerificationCodeForm from '../components/Signup/Verification';
 import { Container, Header, SuccessMessage, Button, LoginBack } from '../styles/Signupstyled';
 import axios from 'axios';
+import styled from 'styled-components';
 
 type User = {
   email: string;
@@ -125,10 +126,15 @@ function Signup() {
     localStorage.setItem('users', JSON.stringify(storedUsers));
   };
 
+  const HomeLink = styled(Link)`
+  text-decoration: none; 
+  color: inherit; 
+`;
+
   return (
     <Container>
       <Header>
-        우리 학교 알리미
+        <HomeLink to="/">우리 학교 알리미</HomeLink>
         <br />회원가입
       </Header>
       {isSignUpSuccessful ? (

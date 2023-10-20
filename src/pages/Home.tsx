@@ -3,6 +3,7 @@ import Main from "../components/home/Main";
 import Aside from "../components/home/Aside";
 import Footer from "../components/home/Footer";
 import styled from "styled-components";
+import ChatButton from "../components/home/Chatting/Chat";
 
 function HomePage() {
   return (
@@ -11,6 +12,7 @@ function HomePage() {
       <Main />
       <Aside />
       <Footer />
+      <ChatButton />
     </Container>
   );
 }
