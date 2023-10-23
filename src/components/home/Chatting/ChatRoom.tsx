@@ -2,32 +2,55 @@ import React, { useState, useRef, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import Header from "../Header";
 import styled from "styled-components";
+import io from "socket.io-client";
 
 const ChatRoom = () => {
   const { id } = useParams();
+  const storedMessages = localStorage.getItem("chatMessages");
+  const initialMessages = storedMessages ? JSON.parse(storedMessages) : [];
   const [messages, setMessages] = useState<{ text: string; isMyMessage: boolean }[]>(
-    []
+    initialMessages
   );
   const [newMessage, setNewMessage] = useState("");
   const chatContentRef = useRef<HTMLDivElement | null>(null);
 
+  const socket = io("http://localhost:3001", {
+  path: '/socket.io', 
+  reconnection: true,
+  reconnectionAttempts: 5,
+  reconnectionDelay: 1000, 
+});
+
+  const sendMessageToServer = (messageToSend: { text: string; isMyMessage: boolean; }) => {
+    socket.emit("message", messageToSend);
+  };
+
   const handleSendMessage = () => {
     if (newMessage.trim() !== "") {
-      setMessages([...messages, { text: newMessage, isMyMessage: true }]);
+      const messageToSend = { text: newMessage, isMyMessage: true };
+      sendMessageToServer(messageToSend);
+
+      setMessages((prevMessages) => [...prevMessages, messageToSend]);
       setNewMessage("");
     }
   };
 
-  const handleInputKeyPress = (e: { key: string }) => {
+  const handleInputKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       handleSendMessage();
     }
+  };
+
+  const handleReceivedMessage = (receivedMessage: { text: string; isMyMessage: boolean }) => {
+    setMessages((prevMessages) => [...prevMessages, receivedMessage]);
   };
 
   useEffect(() => {
     if (chatContentRef.current) {
       chatContentRef.current.scrollTop = chatContentRef.current.scrollHeight;
     }
+
+    socket.on("message", handleReceivedMessage);
   }, [messages]);
 
   return (
@@ -94,6 +117,7 @@ const MessageBubble = styled.div<{ isMyMessage: boolean }>`
   align-self: ${(props) => (props.isMyMessage ? "flex-end" : "flex-start")};
   word-wrap: break-word;
 `;
+
 
 const ChatInputContainer = styled.div`
   display: flex;
