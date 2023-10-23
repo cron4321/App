@@ -1,14 +1,18 @@
 /* eslint-disable no-restricted-globals */
 
 const cacheName = "my-cache";
-const filesToCache = ["./", "./index.html", "../src"];
+const filesToCache = [
+  "pwa-app/",
+  "pwa-app/public/index.html",
+  "pwa-app/public/manifext.json",
+];
 
 self.addEventListener("install", (event) => {
   console.log("서비스워커 설치됨");
   event.waitUntil(
     caches.open(cacheName).then((cache) => {
       console.log("파일을 캐시에 저장함");
-      return cache.addAll(filesToCache);
+      return cache.addAll([filesToCache]);
     })
   );
 });
