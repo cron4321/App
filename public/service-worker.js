@@ -1,19 +1,27 @@
 /* eslint-disable no-restricted-globals */
 
 const cacheName = "my-cache";
-const filesToCache = ["./", "./index.html", "../src"];
+const filesToCache = ["/", "/index.html", "/styles.css", "/script.js"];
 
 self.addEventListener("install", (event) => {
   console.log("서비스워커 설치됨");
   event.waitUntil(
     caches.open(cacheName).then((cache) => {
       console.log("파일을 캐시에 저장함");
-      return cache.addAll(filesToCache);
+      return cache.addAll(filesToCache)
+      .then(function() {
+        return fetch('/assets-manifest.json')
+          .then(response => response.json())
+          .then(assets => {
+            const urlsToCache = Object.values(assets);
+            return cache.addAll(urlsToCache);
+          });
+      });
     })
   );
 });
 
-self.addEventListener("activate", (pEvent) => {
+self.addEventListener("activate", (event) => {
   console.log("서비스워커 동작 시작됨!");
 });
 
