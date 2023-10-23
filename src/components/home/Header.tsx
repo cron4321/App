@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
-import { Link } from "react-router-dom"; // 추가
+import { Link } from "react-router-dom";
 import Sidebar from "./Headrcomponets/Sidebar";
 import Alarm from "./Headrcomponets/Alram";
 import MenuIcon from "@mui/icons-material/Menu";
+import axios from 'axios';
 
 function Header() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -17,13 +18,17 @@ function Header() {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("loggedInUser");
-    localStorage.removeItem("isLoggedIn");
-    setIsLoggedIn(false);
-    setUserEmail("");
-    setUserNickname("");
-    alert("로그아웃 되었습니다");
+  const handleLogout = async () => {
+    try {
+      await axios.post('http://localhost:3002/logout');
+      setUserEmail("");
+      setUserNickname("");
+      setIsLoggedIn(false);
+      alert("로그아웃 되었습니다");
+    } catch (error) {
+      console.error('로그아웃 오류:', error);
+      alert('로그아웃 중 오류가 발생했습니다.');
+    }
   };
 
   useEffect(() => {
@@ -45,14 +50,23 @@ function Header() {
   }, [isSidebarOpen]);
 
   useEffect(() => {
-    const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser") || '{}');
-    if (loggedInUser.email && loggedInUser.username) {
-      setIsLoggedIn(true);
-      setUserEmail(loggedInUser.email);
-      setUserNickname(loggedInUser.username);
-    } else {
-      setIsLoggedIn(false);
-    }
+    const fetchUserData = async () => {
+      try {
+        const response = await axios.get('http://localhost:3002/user');
+        const userData = response.data;
+        if (userData.email && userData.username) {
+          setIsLoggedIn(true);
+          setUserEmail(userData.email);
+          setUserNickname(userData.username);
+        } else {
+          setIsLoggedIn(false);
+        }
+      } catch (error) {
+        console.error('사용자 정보 불러오기 오류:', error);
+      }
+    };
+
+    fetchUserData();
   }, []);
 
   return (
@@ -61,7 +75,8 @@ function Header() {
       <Link to="/" style={{ textDecoration: "none", color: "#fff" }}>
         <HeaderText>우리 학교 알리미</HeaderText>
       </Link>
-      <Alarm isSidebarOpen={isSidebarOpen} onLogout={handleLogout} />
+        <Alarm isSidebarOpen={isSidebarOpen} onLogout={handleLogout} />
+      
       <Sidebar
         isSidebarOpen={isSidebarOpen}
         ref={sidebarRef}
@@ -97,6 +112,25 @@ const MenuButton = styled.div`
 const HeaderText = styled.h1`
   color: #fff;
   text-decoration: none;
+`;
+
+const UserInfoContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  color: #fff;
+`;
+
+const UserInfo = styled.span`
+  margin: 4px;
+`;
+
+const LogoutButton = styled.button`
+  background: none;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  text-decoration: underline;
 `;
 
 export default Header;

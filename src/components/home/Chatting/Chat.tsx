@@ -44,7 +44,7 @@ const ChatButton: React.FC = () => {
 
   const handleSearch = () => {
     if (searchTerm.trim() !== "") {
-      axios.get<User[]>(`http://localhost:3001/api/search?username=${searchTerm}`)
+      axios.get<User[]>(`http://localhost:3001/search?username=${searchTerm}`)
         .then((response) => {
           setSearchResults(response.data);
           setIsChatModalOpen(true);
