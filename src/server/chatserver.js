@@ -3,7 +3,6 @@ const app = express();
 const http = require("http").createServer(app);
 const cors = require("cors");
 const sqlite3 = require("sqlite3").verbose();
-const db = new sqlite3.Database("chat.db");
 
 app.use(cors({
   origin: "http://localhost:3000",
@@ -20,26 +19,31 @@ const io = require("socket.io")(http, {
   }
 });
 
-db.serialize(function () {
-  db.run(
-    "CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT)"
-  );
-  app.get("/search", (req, res) => {
-    const { username } = req.query;
-    db.get("SELECT * FROM users WHERE username = ?", [username], (err, row) => {
-      if (err) {
-        console.error("Database error:", err);
-        return res.status(500).json({ error: "Database error" });
+app.get("/search", (req, res) => {
+  const { username } = req.query;
+
+  const db = new sqlite3.Database("chat.db");
+
+  db.get("SELECT * FROM users WHERE username = ?", [username], (err, row) => {
+    db.close((closeErr) => {
+      if (closeErr) {
+        console.error('Error closing database:', closeErr);
       }
-      if (!row) {
-        return res.status(404).json({ error: "User not found" });
-      }
-      res.json({ id: row.id, username: row.username });
     });
+
+    if (err) {
+      console.error("Database error:", err);
+      return res.status(500).json({ error: "Database error" });
+    }
+    if (!row) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    res.json({ id: row.id, username: row.username });
   });
 });
 
-db.close();
+
+//db.close();
 
 const chatRooms = {};
 
@@ -54,8 +58,6 @@ app.post("/createroom", (req, res) => {
 });
 
 io.on("connection", (socket) => {
-  console.log("Socket connected: " + socket.id);
-
   socket.on("join-room", (roomId) => {
     socket.join(roomId);
   });
@@ -64,10 +66,6 @@ io.on("connection", (socket) => {
     const roomId = data.roomId;
     chatRooms[roomId].messages.push(data);
     io.to(roomId).emit("message", data);
-  });
-
-  socket.on("disconnect", () => {
-    console.log("Socket disconnected: " + socket.id);
   });
 });
 

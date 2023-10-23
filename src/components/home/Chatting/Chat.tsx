@@ -46,16 +46,22 @@ const ChatButton: React.FC = () => {
     if (searchTerm.trim() !== "") {
       axios.get<User[]>(`http://localhost:3001/search?username=${searchTerm}`)
         .then((response) => {
-          setSearchResults(response.data);
-          setIsChatModalOpen(true);
+          const results = response.data;
+          if (results.length === 0) {
+            alert("사용자를 찾을 수 없습니다. 다른 닉네임을 시도하세요.");
+          } else {
+            setSearchResults(results);
+            setIsChatModalOpen(true);
+          }
         })
         .catch((error) => {
           console.error("검색 요청 오류:", error);
         });
     } else {
-      console.error("검색어를 입력하세요.");
+      alert("검색어를 입력하세요.");
     }
   };
+  
 
   const handleCreateRoom = (userId: number) => {
     const existingRoom = chatRooms.find((room) => room.id === userId);
@@ -63,8 +69,10 @@ const ChatButton: React.FC = () => {
     if (existingRoom) {
       window.location.href = `/chatroom/${existingRoom.id}`;
     } else {
-      const yourUserId = 'yeow_1@naver.com';
-      socket.emit("create-chat-room", { userId1: yourUserId, userId2: userId });
+      const user = searchResults.find((user) => user.id === userId);
+      if (user) {
+        socket.emit("create-chat-room", { userId1: "현재 사용자 ID", userId2: user.id });
+      }
     }
   };
 
