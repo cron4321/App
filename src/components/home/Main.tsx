@@ -3,14 +3,14 @@ import styled from "styled-components";
 import AddIcon from "@mui/icons-material/Add";
 import axios from "axios";
 import { Link } from "react-router-dom";
-import { Itemprops } from "../../Itemprops";
+import { Itemprops } from "../../types";
 
 function Main() {
   const [data, setData] = useState<Itemprops[]>([]);
 
   useEffect(() => {
     axios
-      .get("http://localhost:4000/data/") 
+      .get("http://localhost:4000/data/")
       .then((response) => {
         setData(response.data);
       })

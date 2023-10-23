@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import ReactModal from "react-modal";
-import { Itemprops } from "../../Itemprops";
+import { Itemprops } from "../../types";
 
 function MemoModal(props: Itemprops) {
   const {

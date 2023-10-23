@@ -1,10 +1,10 @@
 import styled from "styled-components";
 import AddIcon from "@mui/icons-material/Add";
-import { Itemprops } from "../../Itemprops";
+import { Itemprops } from "../../types";
 
 function Footer() {
   const numberOfFooterContents = 10;
-  const createFooterContent = (index: Itemprops['index']) => (
+  const createFooterContent = (index: Itemprops["index"]) => (
     <FooterContent key={index}></FooterContent>
   );
   return (

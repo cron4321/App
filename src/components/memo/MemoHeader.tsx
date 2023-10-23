@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import AddIcon from "@mui/icons-material/Add";
-import { Itemprops } from "../../Itemprops";
+import { Itemprops } from "../../types";
 
 function MemoHeader(props: Itemprops) {
   const { openModal } = props;

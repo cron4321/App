@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { Itemprops } from "../../Itemprops";
+import { Itemprops } from "../../types";
 
 function MemoMain(props: Itemprops) {
   const { memos, openEditModal } = props;
