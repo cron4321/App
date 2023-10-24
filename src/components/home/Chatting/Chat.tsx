@@ -19,19 +19,10 @@ const ChatButton: React.FC = () => {
   const [searchResults, setSearchResults] = useState<User[] | null>(null);
   const [error, setError] = useState("");
   const [showSearchResultsModal, setShowSearchResultsModal] = useState(false);
-  const [selectedUserEmail, setSelectedUserEmail] = useState(null);
-
-  const openSearchResultsModal = () => {
-    setShowSearchResultsModal(true);
-  };
-
-  const closeSearchResultsModal = () => {
-    setShowSearchResultsModal(false);
-  };
+  const [currentUserEmail, setCurrentUserEmail] = useState<string>("");
 
   const handleSearchResultClick = (email: any) => {
-    // Create a chat room or move to an existing one for the selected user
-    createOrMoveToChatRoom(email);
+    window.location.href = `/chatroom/${email}`;
   };
 
   const socket = io("http://localhost:3001", {
@@ -47,6 +38,17 @@ const ChatButton: React.FC = () => {
     });
     socket.emit("get-chat-rooms");
 
+    const getChatRoomsForCurrentUser = () => {
+      const currentUserId = "yeow_1@naver.com"; 
+
+      getChatRoomsForUser(currentUserId, chatRoomIds => {
+        setChatRooms(chatRoomIds.map(id => ({ id, email: '', username: '' })));
+      });
+    };
+
+
+    getChatRoomsForCurrentUser(); 
+
     return () => {
       socket.off("chat-rooms");
     };
@@ -61,18 +63,23 @@ const ChatButton: React.FC = () => {
   };
 
   const handleSearch = () => {
-    console.log("검색버튼 클릭");
     if (searchTerm.trim() !== "") {
       axios.get(`http://localhost:3001/search?email=${searchTerm}`)
         .then((response) => {
-          const results = response.data;
-          setError(results.length === 0 ? "존재하지 않는 닉네임입니다." : "");
-          setSearchResults(
-            Array.isArray(results)
-              ? results.filter((user: User) => user.email.includes(searchTerm))
-              : null
-          );
-          setIsChatModalOpen(results.length > 0);
+          const results = response.data.searchResults;
+          if (results) {
+            setError(results.length === 0 ? "존재하지 않는 닉네임입니다." : "");
+            setSearchResults(
+              Array.isArray(results)
+                ? results.filter((user: User) => user.email.includes(searchTerm))
+                : null
+            );
+            setIsChatModalOpen(results.length > 0);
+            setCurrentUserEmail(response.data.currentUserEmail);
+          } else {
+            setSearchResults([]);
+            setError("검색 결과가 없습니다.");
+          }
         })
         .catch((error) => {
           console.error("검색 요청 오류:", error);
@@ -85,37 +92,22 @@ const ChatButton: React.FC = () => {
     }
   };
 
-  const handleCreateRoom = (userId: string) => {
-    console.log("방만들기 버튼");
-    const existingRoom = chatRooms.find((room) => room.id === userId);
 
-    if (existingRoom) {
-      window.location.href = `/chatroom/${existingRoom.id}`;
-    } else if (searchResults && searchResults.length > 0) {
-      const user = searchResults.find((user) => user.email === userId);
-      if (user) {
-        createChatRoom(user.id, user.email);
-      } else {
-        console.log("유저를 찾을 수 없습니다:", userId);
-      }
-    }
+  const getChatRoomsForUser = (userId: string, callback: (chatRooms: string[]) => void) => {
+    // 현재 사용자의 ID 또는 이메일을 사용해 채팅방 목록을 가져오는 로직을 구현 (예: 서버 요청)
+
+    // 임시로 빈 배열을 반환하는 예시
+    callback([]);
   };
 
-  const createOrMoveToChatRoom = (email: string) => {
-    const existingRoom = chatRooms.find((room) => room.email === email);
+  const handleChatRoomClick = (userId: string, roomId: string) => {
+    getChatRoomsForUser(userId, chatRooms => {
+      const existingChatRoom = chatRooms.find(id => id === roomId);
 
-    if (existingRoom) {
-      window.location.href = `/chatroom/${existingRoom.id}`;
-    } else {
-      const user = searchResults?.find((user) => user.email === email);
-      if (user) {
-        createChatRoom(user.id, user.email);
+      if (!existingChatRoom) {
       }
-    }
-  };
 
-  const createChatRoom = (userId: string, email: string) => {
-    socket.emit("create-chat-room", { userId1: userId, userId2: email });
+    });
   };
 
   return (
@@ -142,34 +134,28 @@ const ChatButton: React.FC = () => {
               {searchResults.map((user) => (
                 <SearchResultItem
                   key={user.id}
-                  onClick={() => handleCreateRoom(user.email)}
+                  onClick={() => handleSearchResultClick(user.email)}
                 >
                   {user.username}
                 </SearchResultItem>
               ))}
             </SearchResults>
           )}
-          <ChatRoomList>
-            {chatRooms.map((user) => (
-              <NoUnderlineLink to={`/chatroom/${user.id}`} key={user.id}>
-                <ChatRoomItem>
-                  {user.username}
-                </ChatRoomItem>
-              </NoUnderlineLink>
-            ))}
-          </ChatRoomList>
-          <ChatModalCloseButton onClick={closeChatModal}>닫기</ChatModalCloseButton>
-        </ChatModalContainer>
-      )}
-      {showSearchResultsModal && (
-        <SearchResultsModal
-          results={searchResults || []}
-          onResultClick={handleSearchResultClick}
-        />
-      )}
+          {currentUserEmail && (
+      <ChatRoomItem
+        onClick={() => handleSearchResultClick(currentUserEmail)}
+      >
+        내 채팅방
+      </ChatRoomItem>
+    )}
+    <ChatModalCloseButton onClick={closeChatModal}>닫기</ChatModalCloseButton>
+  </ChatModalContainer>
+)}
     </>
   );
 };
+
+
 const NoUnderlineLink = styled(Link)`
   text-decoration: none;
   color: #000;
@@ -243,7 +229,7 @@ const SearchResultItem = styled.div`
   border-bottom: 1px solid #ccc;
   &:hover {
     background: #f4f4f4;
-  };
+  }
 `;
 
 const ChatRoomList = styled.div`
@@ -256,7 +242,7 @@ const ChatRoomItem = styled.div`
   border-bottom: 1px solid #ccc;
   &:hover {
     background: #f4f4f4;
-  };
+  }
 `;
 
 const ChatModalCloseButton = styled.button`

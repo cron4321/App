@@ -49,25 +49,25 @@ function Header() {
     };
   }, [isSidebarOpen]);
 
-  // useEffect(() => {
-  //   const fetchUserData = async () => {
-  //     try {
-  //       const response = await axios.get('http://localhost:3002/user');
-  //       const userData = response.data;
-  //       if (userData.email && userData.username) {
-  //         setIsLoggedIn(true);
-  //         setUserEmail(userData.email);
-  //         setUserNickname(userData.username);
-  //       } else {
-  //         setIsLoggedIn(false);
-  //       }
-  //     } catch (error) {
-  //       console.error('사용자 정보 불러오기 오류:', error);
-  //     }
-  //   };
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await axios.get('http://localhost:3002/user');
+        const userData = response.data;
+        if (userData.email && userData.username) {
+          setIsLoggedIn(true);
+          setUserEmail(userData.email);
+          setUserNickname(userData.username);
+        } else {
+          setIsLoggedIn(false);
+        }
+      } catch (error) {
+        console.error('사용자 정보 불러오기 오류:', error);
+      }
+    };
 
-  //   fetchUserData();
-  // }, []);
+    fetchUserData();
+  }, []);
 
   return (
     <HeaderContainer>

@@ -8,16 +8,17 @@ import { Itemprops } from "../../types";
 function Main() {
   const [data, setData] = useState<Itemprops[]>([]);
 
-  // useEffect(() => {
-  //   axios
-  //     .get("http://localhost:4000/data/")
-  //     .then((response) => {
-  //       setData(response.data);
-  //     })
-  //     .catch((error) => {
-  //       console.error("데이터를 불러오는 중 에러 발생:", error);
-  //     });
-  // }, []);
+  useEffect(() => {
+    axios
+      .get("http://localhost:4000/data/")
+      .then((response) => {
+        setData(response.data);
+      })
+      .catch((error) => {
+        console.error("데이터를 불러오는 중 에러 발생:", error);
+      });
+  }, []);
+  
   return (
     <MainContainer>
       <MainContent>

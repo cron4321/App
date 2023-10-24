@@ -5,29 +5,27 @@ import styled from "styled-components";
 import io from "socket.io-client";
 
 const ChatRoom = () => {
-  const { id } = useParams();
-  const storedMessages = localStorage.getItem("chatMessages");
-  const initialMessages = storedMessages ? JSON.parse(storedMessages) : [];
-  const [messages, setMessages] = useState<{ text: string; isMyMessage: boolean }[]>(
-    initialMessages
-  );
+  const { id, username } = useParams();
+  const [messages, setMessages] = useState<{ text: string; isMyMessage: boolean }[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const chatContentRef = useRef<HTMLDivElement | null>(null);
 
   const socket = io("http://localhost:3001", {
-  path: '/socket.io', 
-  reconnection: true,
-  reconnectionAttempts: 5,
-  reconnectionDelay: 1000, 
-});
+    path: '/socket.io',
+    reconnection: true,
+    reconnectionAttempts: 5,
+    reconnectionDelay: 1000,
+  });
 
-  const sendMessageToServer = (messageToSend: { text: string; isMyMessage: boolean; }) => {
+  const roomId = `room-${id}-${username}`;
+
+  const sendMessageToServer = (messageToSend: { text: string; isMyMessage: boolean; roomId: string }) => {
     socket.emit("message", messageToSend);
   };
 
   const handleSendMessage = () => {
     if (newMessage.trim() !== "") {
-      const messageToSend = { text: newMessage, isMyMessage: true };
+      const messageToSend = { text: newMessage, isMyMessage: true, roomId: roomId };
       sendMessageToServer(messageToSend);
 
       setMessages((prevMessages) => [...prevMessages, messageToSend]);
@@ -50,13 +48,31 @@ const ChatRoom = () => {
       chatContentRef.current.scrollTop = chatContentRef.current.scrollHeight;
     }
 
+    socket.emit("join-room", roomId);
+
     socket.on("message", handleReceivedMessage);
-  }, [messages]);
+
+    // 서버에서 초기 메시지를 가져오는 부분
+    async function fetchInitialMessagesFromServer() {
+      try {
+        const response = await fetch('http://localhost:3001/initial-messages'); // 서버 주소에 맞게 수정
+        if (!response.ok) {
+          throw new Error('서버로부터 초기 메시지를 가져오는데 실패했습니다.');
+        }
+        const data = await response.json();
+        setMessages(data.initialMessages); // 서버에서 받은 초기 메시지를 상태에 설정
+      } catch (error) {
+        console.error('서버 요청 오류:', error);
+      }
+    }
+
+    fetchInitialMessagesFromServer();
+  }, [roomId]);
 
   return (
     <ChatRoomContainer>
       <Header />
-      <h2>채팅방 {id}</h2>
+      <h2>{id}님 과의 채팅방</h2>
       <ChatContentContainer>
         <ChatContent ref={chatContentRef}>
           {messages.map((message, index) => (
@@ -79,6 +95,7 @@ const ChatRoom = () => {
     </ChatRoomContainer>
   );
 };
+
 
 const ChatRoomContainer = styled.div`
   display: flex;

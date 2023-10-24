@@ -8,24 +8,27 @@ type User = {
 };
 
 type SearchResultsModalProps = {
-  results: User[];
-  onResultClick: (email: string) => void;
-};
+    results: User[];
+    onResultClick: (email: any) => void;
+    currentUserEmail: string; 
+  };
 
-const SearchResultsModal: React.FC<SearchResultsModalProps> = ({ results, onResultClick }) => (
-  <ModalContainer>
-    <ModalContent>
-      <h2>Search Results</h2>
-      <ResultsList>
-        {results.map((user) => (
-          <ResultItem key={user.id} onClick={() => onResultClick(user.email)}>
-            {user.email}
-          </ResultItem>
-        ))}
-      </ResultsList>
-    </ModalContent>
-  </ModalContainer>
-);
+  const SearchResultsModal: React.FC<SearchResultsModalProps> = ({ results, onResultClick, currentUserEmail }) => (
+    <ModalContainer>
+      <ModalContent>
+        <h2>Search Results</h2>
+        <ResultsList>
+          {results.map((user) => (
+            <ResultItem key={user.id} onClick={() => onResultClick(user.email)}>
+              {user.email}
+              {user.email === currentUserEmail ? <span> (You)</span> : null}
+            </ResultItem>
+          ))}
+        </ResultsList>
+      </ModalContent>
+    </ModalContainer>
+  );
+  
 
 const ModalContainer = styled.div`
   position: fixed;
