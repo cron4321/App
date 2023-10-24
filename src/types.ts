@@ -16,3 +16,18 @@ export interface Itemprops {
   openModal: () => void;
   openEditModal: (index: number) => void;
 }
+
+export type UserSubscription = {
+  userId: string;
+  subscription: PushSubscription;
+};
+
+export type Store = {
+  data: UserSubscription[];
+};
+
+export type PushMessage = {
+  title: string;
+  body: string;
+  link: string;
+};

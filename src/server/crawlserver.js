@@ -4,19 +4,33 @@ const cors = require("cors");
 const express = require("express");
 const fs = require("fs");
 const path = require("path");
+const cron = require("node-cron");
 
 const app = express();
 const port = 4000;
 
 app.use(cors());
 
+// 이전 크롤링 결과를 저장하는 변수
+let previousResults = [];
+
 async function crawlPages() {
   const baseUrl =
-    "https://www.kyonggi.ac.kr/www/selectBbsNttList.do?key=7520&bbsNo=1073";
+    "https://www.inu.ac.kr/inu/1534/subview.do";
   const maxResults = 11; // 결과 개수
   const results = [];
 
   try {
+    // 이전 크롤링 결과를 로드 (최초 실행 시 비어있음)
+    const previousResultsFilePath = path.join(
+      __dirname,
+      "CrawlingDir",
+      "previousResults.json"
+    );
+    if (fs.existsSync(previousResultsFilePath)) {
+      previousResults = JSON.parse(fs.readFileSync(previousResultsFilePath));
+    }
+
     for (let currentPage = 1; results.length < maxResults; currentPage++) {
       const url = `${baseUrl}&pageUnit=10&searchCnd=all&pageIndex=${currentPage}`;
       const response = await axios.get(url);
@@ -42,7 +56,10 @@ async function crawlPages() {
             date: cleanText($(element).find("td:nth-child(7) time").text()),
           };
 
-          results.push(elementData);
+          // 새로운 공지사항인지 확인
+          if (!isInPreviousResults(elementData)) {
+            results.push(elementData);
+          }
         }
       });
     }
@@ -56,12 +73,20 @@ async function crawlPages() {
     const filePath = path.join(CrawlingDir, "result.json");
     fs.writeFileSync(filePath, JSON.stringify(results, null, 2));
 
-    console.log(results);
+    // 현재 결과를 이전 결과로 설정
+    previousResults = results;
 
     // 데이터를 브라우저에 출력
     app.get("/data", (req, res) => {
       res.json(results);
     });
+
+    // 이전 결과를 파일로 저장
+    fs.writeFileSync(
+      previousResultsFilePath,
+      JSON.stringify(previousResults, null, 2)
+    );
+
     // 웹 서버 시작
     app.listen(port, () => {
       console.log(`웹 서버가 http://localhost:${port} 에서 실행 중입니다.`);
@@ -74,5 +99,17 @@ async function crawlPages() {
 function cleanText(text) {
   return text.replace(/\n/g, "").replace(/\s+/g, " ").trim();
 }
+
+function isInPreviousResults(elementData) {
+  // 새로운 공지사항인지 확인하는 함수
+  return previousResults.some(
+    (prevElement) => prevElement.link === elementData.link
+  );
+}
+// 매 30분마다 크롤링 실행
+cron.schedule("*/30 * * * *", () => {
+  console.log("크롤링을 실행합니다.");
+  crawlPages();
+});
 
 crawlPages();
