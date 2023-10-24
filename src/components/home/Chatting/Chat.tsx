@@ -4,9 +4,11 @@ import Chat from "@mui/icons-material/Chat";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import io from "socket.io-client";
+import SearchResultsModal from "./Chatsearchmodal";
 
 type User = {
-  id: number;
+  id: string;
+  email: string;
   username: string;
 };
 
@@ -14,7 +16,23 @@ const ChatButton: React.FC = () => {
   const [isChatModalOpen, setIsChatModalOpen] = useState(false);
   const [chatRooms, setChatRooms] = useState<User[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [searchResults, setSearchResults] = useState<User[]>([]);
+  const [searchResults, setSearchResults] = useState<User[] | null>(null);
+  const [error, setError] = useState("");
+  const [showSearchResultsModal, setShowSearchResultsModal] = useState(false);
+  const [selectedUserEmail, setSelectedUserEmail] = useState(null);
+
+  const openSearchResultsModal = () => {
+    setShowSearchResultsModal(true);
+  };
+
+  const closeSearchResultsModal = () => {
+    setShowSearchResultsModal(false);
+  };
+
+  const handleSearchResultClick = (email: any) => {
+    // Create a chat room or move to an existing one for the selected user
+    createOrMoveToChatRoom(email);
+  };
 
   const socket = io("http://localhost:3001", {
     path: '/socket.io',
@@ -43,37 +61,61 @@ const ChatButton: React.FC = () => {
   };
 
   const handleSearch = () => {
+    console.log("검색버튼 클릭");
     if (searchTerm.trim() !== "") {
-      axios.get<User[]>(`http://localhost:3001/search?username=${searchTerm}`)
+      axios.get(`http://localhost:3001/search?email=${searchTerm}`)
         .then((response) => {
           const results = response.data;
-          if (results.length === 0) {
-            alert("사용자를 찾을 수 없습니다. 다른 닉네임을 시도하세요.");
-          } else {
-            setSearchResults(results);
-            setIsChatModalOpen(true);
-          }
+          setError(results.length === 0 ? "존재하지 않는 닉네임입니다." : "");
+          setSearchResults(
+            Array.isArray(results)
+              ? results.filter((user: User) => user.email.includes(searchTerm))
+              : null
+          );
+          setIsChatModalOpen(results.length > 0);
         })
         .catch((error) => {
           console.error("검색 요청 오류:", error);
+          setError("검색 오류가 발생했습니다.");
+          setSearchResults(null);
         });
     } else {
-      alert("검색어를 입력하세요.");
+      setError("검색어를 입력하세요.");
+      setSearchResults(null);
     }
   };
-  
 
-  const handleCreateRoom = (userId: number) => {
+  const handleCreateRoom = (userId: string) => {
+    console.log("방만들기 버튼");
     const existingRoom = chatRooms.find((room) => room.id === userId);
 
     if (existingRoom) {
       window.location.href = `/chatroom/${existingRoom.id}`;
-    } else {
-      const user = searchResults.find((user) => user.id === userId);
+    } else if (searchResults && searchResults.length > 0) {
+      const user = searchResults.find((user) => user.email === userId);
       if (user) {
-        socket.emit("create-chat-room", { userId1: "현재 사용자 ID", userId2: user.id });
+        createChatRoom(user.id, user.email);
+      } else {
+        console.log("유저를 찾을 수 없습니다:", userId);
       }
     }
+  };
+
+  const createOrMoveToChatRoom = (email: string) => {
+    const existingRoom = chatRooms.find((room) => room.email === email);
+
+    if (existingRoom) {
+      window.location.href = `/chatroom/${existingRoom.id}`;
+    } else {
+      const user = searchResults?.find((user) => user.email === email);
+      if (user) {
+        createChatRoom(user.id, user.email);
+      }
+    }
+  };
+
+  const createChatRoom = (userId: string, email: string) => {
+    socket.emit("create-chat-room", { userId1: userId, userId2: email });
   };
 
   return (
@@ -94,16 +136,19 @@ const ChatButton: React.FC = () => {
             />
             <SearchButton onClick={handleSearch}>검색</SearchButton>
           </SearchContainer>
-          <SearchResults>
-            {searchResults.map((user) => (
-              <SearchResultItem
-                key={user.id}
-                onClick={() => handleCreateRoom(user.id)}
-              >
-                {user.username}
-              </SearchResultItem>
-            ))}
-          </SearchResults>
+          {error && <ErrorText>{error}</ErrorText>}
+          {searchResults !== null && (
+            <SearchResults>
+              {searchResults.map((user) => (
+                <SearchResultItem
+                  key={user.id}
+                  onClick={() => handleCreateRoom(user.email)}
+                >
+                  {user.username}
+                </SearchResultItem>
+              ))}
+            </SearchResults>
+          )}
           <ChatRoomList>
             {chatRooms.map((user) => (
               <NoUnderlineLink to={`/chatroom/${user.id}`} key={user.id}>
@@ -116,10 +161,15 @@ const ChatButton: React.FC = () => {
           <ChatModalCloseButton onClick={closeChatModal}>닫기</ChatModalCloseButton>
         </ChatModalContainer>
       )}
+      {showSearchResultsModal && (
+        <SearchResultsModal
+          results={searchResults || []}
+          onResultClick={handleSearchResultClick}
+        />
+      )}
     </>
   );
 };
-
 const NoUnderlineLink = styled(Link)`
   text-decoration: none;
   color: #000;
@@ -193,7 +243,7 @@ const SearchResultItem = styled.div`
   border-bottom: 1px solid #ccc;
   &:hover {
     background: #f4f4f4;
-  }
+  };
 `;
 
 const ChatRoomList = styled.div`
@@ -206,7 +256,7 @@ const ChatRoomItem = styled.div`
   border-bottom: 1px solid #ccc;
   &:hover {
     background: #f4f4f4;
-  }
+  };
 `;
 
 const ChatModalCloseButton = styled.button`
@@ -218,6 +268,10 @@ const ChatModalCloseButton = styled.button`
   color: #fff;
   border-radius: 5px;
   margin-left: auto;
+`;
+
+const ErrorText = styled.div`
+  color: red;
 `;
 
 export default ChatButton;

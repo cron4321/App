@@ -92,6 +92,27 @@ app.post('/verify-verification-code', (req, res) => {
   }
 });
 
+app.post('/check-duplicate', async (req, res) => {
+  const { email, username } = req.body;
+
+  db.get('SELECT * FROM users WHERE email = ? OR username = ?', [email, username], (err, row) => {
+    if (err) {
+      console.error('Database error during duplicate check:', err);
+      return res.status(500).json({ error: 'Database error during duplicate check' });
+    }
+
+    if (row) {
+      if (row.email === email) {
+        res.status(200).json({ emailExists: true });
+      } else {
+        res.status(200).json({ usernameExists: true });
+      }
+    } else {
+      res.status(200).json({ emailExists: false, usernameExists: false });
+    }
+  });
+});
+
 app.post('/signup', async (req, res) => {
   const { email, password, username } = req.body;
 
@@ -104,9 +125,9 @@ app.post('/signup', async (req, res) => {
 
       db.run("INSERT INTO users (email, password, username) VALUES (?, ?, ?)", [email, password, username], function (err) {
         if (err) {
-          console.error("Database error:", err);
+          console.error('Database error during signup:', err);
           db.run('ROLLBACK');
-          return res.status(500).json({ error: "Database error" });
+          return res.status(500).json({ error: 'Database error during signup' });
         }
 
         db.run('COMMIT', (commitErr) => {
