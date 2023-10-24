@@ -11,8 +11,8 @@ app.use(bodyParser.json());
 const transporter = nodemailer.createTransport({
   service: 'Gmail',
   auth: {
-    user: 'yeow1842@gmail.com', // 발신자 이메일
-    pass: 'iefi cwqt qbtt spav', // 앱 비밀번호
+    user: 'yeow1842@gmail.com',
+    pass: 'iefi cwqt qbtt spav',
   },
 });
 
@@ -31,20 +31,32 @@ function connectToDatabase() {
     } else {
       console.log('Connected to the database.');
 
-      db.run('CREATE TABLE IF NOT EXISTS nowloginid (email TEXT, username TEXT)');
-      db.run('CREATE TABLE IF NOT EXISTS nowloginsuc (status BOOLEAN)');
+      db.run(`
+        CREATE TABLE IF NOT EXISTS users (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          email TEXT,
+          password TEXT,
+          username TEXT
+        )
+      `);
+
+      db.run(`
+        CREATE TABLE IF NOT EXISTS nowloginid (
+          email TEXT,
+          username TEXT
+        )
+      `);
+
+      db.run(`
+        CREATE TABLE IF NOT EXISTS nowloginsuc (
+          status BOOLEAN
+        )
+      `);
     }
   });
 }
 
 connectToDatabase();
-
-
-db.serialize(function () {
-  db.run(
-    'CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT, password TEXT, username TEXT)'
-  );
-});
 
 app.post('/send-verification-email', (req, res) => {
   const { email } = req.body;
@@ -83,27 +95,29 @@ app.post('/verify-verification-code', (req, res) => {
 app.post('/signup', async (req, res) => {
   const { email, password, username } = req.body;
 
-  db.run('BEGIN TRANSACTION', (beginErr) => {
-    if (beginErr) {
-      console.error("Transaction error:", beginErr);
-      return res.status(500).json({ error: "Transaction error" });
-    }
-
-    db.run("INSERT INTO users (email, password, username) VALUES (?, ?, ?)", [email, password, username], function (err) {
-      if (err) {
-        console.error("Database error:", err);
-        db.run('ROLLBACK'); 
-        return res.status(500).json({ error: "Database error" });
+  db.serialize(function () {
+    db.run('BEGIN TRANSACTION', (beginErr) => {
+      if (beginErr) {
+        console.error("Transaction error:", beginErr);
+        return res.status(500).json({ error: "Transaction error" });
       }
 
-      db.run('COMMIT', (commitErr) => {
-        if (commitErr) {
-          console.error("Commit error:", commitErr);
-          return res.status(500).json({ error: "Commit error" });
+      db.run("INSERT INTO users (email, password, username) VALUES (?, ?, ?)", [email, password, username], function (err) {
+        if (err) {
+          console.error("Database error:", err);
+          db.run('ROLLBACK');
+          return res.status(500).json({ error: "Database error" });
         }
 
-        console.log("Data Added");
-        res.status(200).json({ message: "회원가입이 완료되었습니다." });
+        db.run('COMMIT', (commitErr) => {
+          if (commitErr) {
+            console.error("Commit error:", commitErr);
+            return res.status(500).json({ error: "Commit error" });
+          }
+
+          console.log("Data Added");
+          res.status(200).json({ message: "회원가입이 완료되었습니다." });
+        });
       });
     });
   });
@@ -120,14 +134,12 @@ app.post('/login', (req, res) => {
     if (row) {
       console.log('로그인 성공. 사용자 정보:', row);
 
-      db.run('CREATE TABLE IF NOT EXISTS nowloginid (email TEXT, username TEXT)');
-      db.run('DELETE FROM nowloginid');  
+      db.run('DELETE FROM nowloginid');
       const insertUser = db.prepare('INSERT INTO nowloginid (email, username) VALUES (?, ?)');
-      insertUser.run(email, row.username);  
+      insertUser.run(email, row.username);
       insertUser.finalize();
 
-      db.run('CREATE TABLE IF NOT EXISTS nowloginsuc (status BOOLEAN)');
-      db.run('DELETE FROM nowloginsuc');  
+      db.run('DELETE FROM nowloginsuc');
       const insertStatus = db.prepare('INSERT INTO nowloginsuc (status) VALUES (?)');
       insertStatus.run(true);
       insertStatus.finalize();
@@ -140,10 +152,8 @@ app.post('/login', (req, res) => {
   });
 });
 
-
 app.post('/logout', (req, res) => {
   db.serialize(function () {
-    db.run('CREATE TABLE IF NOT EXISTS nowloginid (email TEXT, password TEXT)');
     db.run('DELETE FROM nowloginid');
     db.run('DELETE FROM nowloginsuc');
   });
@@ -165,7 +175,6 @@ app.get('/user', (req, res) => {
     }
   });
 });
-
 
 const port = process.env.PORT || 3002;
 app.listen(port, () => {
