@@ -92,9 +92,8 @@ const ChatClient: React.FC = () => {
 const Container = styled.div`
   background-color: #f5f5f5;
   padding: 20px;
-  border-radius: 8px;
-  border: 2px solid #0074E4; 
-  box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.2); 
+  border-radius: 12px;
+  border: 1px solid #0074E4; 
   align-items: center;
   flex-direction: column;
 `;
