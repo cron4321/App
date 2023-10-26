@@ -102,6 +102,15 @@ cron.schedule("*/30 * * * *", () => {
 
 crawlPages();
 
+// // 함수로 새 글 감지 및 푸시 알림 보내기
+// function notifyNewPost(newData) {
+//   newData = results[0].title;
+//   const payload = JSON.stringify(newData);
+//   webpush.sendNotification(subscription, payload).catch((error) => {
+//     console.error("푸시 알림 보내기 오류:", error);
+//   });
+// }
+
 if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
   console.log(
     "You must set the VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY " +
@@ -120,20 +129,6 @@ webpush.setVapidDetails(
 
 app.post("/register", (req, res) => {
   const subscription = req.body.subscription;
-  const payload = results[0].title;
-  webpush
-    .sendNotification(subscription, payload)
-    .then(function () {
-      res.sendStatus(201);
-    })
-    .catch(function (error) {
-      console.log(error);
-      res.sendStatus(500);
-    });
-});
-
-app.post("/register", (req, res) => {
-  const subscription = req.body.subscription;
   const payload = results[0].title
   webpush
     .sendNotification(subscription, payload)
@@ -145,5 +140,3 @@ app.post("/register", (req, res) => {
       res.sendStatus(500);
     });
 });
-
-

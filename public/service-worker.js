@@ -1,7 +1,7 @@
 /* eslint-disable no-restricted-globals */
 
 const cacheName = "my-cache";
-const filesToCache = ["/", "/index.html", "/styles.css", "/script.js"];
+const filesToCache = ["./", "./index.html", "../src"];
 
 self.addEventListener("install", (event) => {
   console.log("서비스워커 설치됨");
@@ -14,7 +14,7 @@ self.addEventListener("install", (event) => {
 });
 
 self.addEventListener("activate", (event) => {
-  console.log("서비스워커 동작 시작됨!");
+  console.log("서비스워커 동작 시작됨");
 });
 
 // self.addEventListener("fetch", (event) => {
