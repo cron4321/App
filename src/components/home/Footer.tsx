@@ -90,6 +90,7 @@ const FooterContent = styled.div`
 `;
 
 const ChatContainer = styled.div`
+  margin-top: 50px;
 `;
 
 export default Footer;
