@@ -139,7 +139,7 @@ function Signup() {
   return (
     <Container>
       <Header>
-        <HomeLink to="/">우리 학교 알리미</HomeLink>
+      <a href='/'>우리 학교 알리미</a>
         <br />회원가입
       </Header>
       {isSignUpSuccessful ? (

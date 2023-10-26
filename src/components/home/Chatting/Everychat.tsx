@@ -28,9 +28,9 @@ const ChatClient: React.FC = () => {
   
     const initialMessagesHandler = (messages: any[]) => {
       setChatLog(messages.map(message => `${message.username}: ${message.message}`));
-    };    
-    
-    const clientNameHandler = (name: React.SetStateAction<string>) => {
+    };
+  
+    const clientNameHandler = (name: string) => {
       setClientName(name);
     };
   
@@ -44,6 +44,7 @@ const ChatClient: React.FC = () => {
       socket.off('clientName', clientNameHandler);
     };
   }, []);
+  
   
   
 
