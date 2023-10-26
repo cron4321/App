@@ -1,7 +1,8 @@
 const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
-const cors = require('cors'); 
+const cors = require('cors');
+const sqlite3 = require('sqlite3').verbose(); 
 
 const app = express();
 const server = http.createServer(app);
@@ -9,21 +10,54 @@ const io = socketIo(server);
 
 app.use(cors());
 
+const db = new sqlite3.Database('chat.db', (err) => {
+  if (err) {
+    console.error(err.message);
+  } else {
+    console.log('Connected to the chat database');
+  }
+});
+
+const clientInfo = {};
+
+db.serialize(() => {
+  db.run('CREATE TABLE IF NOT EXISTS messages (id INTEGER PRIMARY KEY, username TEXT, message TEXT)', (err) => {
+    if (err) {
+      console.error('Error creating table:', err.message);
+    } else {
+      console.log('Table created');
+    }
+  });
+});
+
 let clientCount = 0;
 
 io.on('connection', (socket) => {
-  console.log('Client connected');
-  
   clientCount++;
-  const clientName = `익명${clientCount}`; 
+  const clientName = `익명${clientCount}`;
 
-  socket.emit('clientName', clientName); 
+  console.log(`Client connected: ${clientName}`);
+  
+  socket.emit('clientName', clientName);
 
-  socket.on('message', (message) => {
-    console.log(`Received message from ${clientName}: ${message}`);
-    io.emit('message', `${clientName}: ${message}`); 
+  db.all('SELECT * FROM messages', (err, rows) => {
+    if (!err) {
+      socket.emit('initialMessages', rows);
+    }
   });
+  socket.on('message', (data) => {
+    const { username, message } = data;
 
+    db.run('INSERT INTO messages (username, message) VALUES (?, ?)', [username, message], (err) => {
+      if (err) {
+        console.error(err.message);
+      } else {
+        console.log(`Message saved: ${message}`);
+      }
+    });
+
+    io.emit('message', `${username}: ${message}`);
+  });
   socket.on('disconnect', () => {
     console.log(`Client disconnected: ${clientName}`);
   });

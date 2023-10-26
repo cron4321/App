@@ -20,31 +20,44 @@ const ChatClient: React.FC = () => {
 
   useEffect(() => {
     socket.emit('requestClientName');
-
+  
     const messageHandler = (message: string) => {
       console.log(`Received message: ${message}`);
       setChatLog((prevLog) => [...prevLog, message]);
     };
-
-    const clientNameHandler = (name: string) => {
-      setClientName(name); 
+  
+    const initialMessagesHandler = (messages: any[]) => {
+      setChatLog(messages.map(message => message.message)); // Extract 'message' property from objects
     };
-
+  
+    const clientNameHandler = (name: React.SetStateAction<string>) => {
+      setClientName(name);
+    };
+  
     socket.on('message', messageHandler);
+    socket.on('initialMessages', initialMessagesHandler);
     socket.on('clientName', clientNameHandler);
-
+  
     return () => {
       socket.off('message', messageHandler);
+      socket.off('initialMessages', initialMessagesHandler);
       socket.off('clientName', clientNameHandler);
     };
   }, []);
+  
+  
 
   const sendMessage = () => {
     if (message) {
-      socket.emit('message', message);
+      const data = {
+        username: clientName,
+        message: message,
+      };
+      socket.emit('message', data);
       setMessage('');
     }
   };
+  
 
   return (
     <Container>
