@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import io from 'socket.io-client';
 
@@ -17,6 +17,7 @@ const ChatClient: React.FC = () => {
   const [message, setMessage] = useState('');
   const [chatLog, setChatLog] = useState<string[]>([]);
   const [clientName, setClientName] = useState<string>(''); 
+  const chatLogRef = useRef<HTMLDivElement | null>(null); 
 
   useEffect(() => {
     socket.emit('requestClientName');
@@ -24,10 +25,12 @@ const ChatClient: React.FC = () => {
     const messageHandler = (message: string) => {
       console.log(`Received message: ${message}`);
       setChatLog((prevLog) => [...prevLog, message]);
+      scrollToBottom();
     };
   
     const initialMessagesHandler = (messages: any[]) => {
       setChatLog(messages.map(message => `${message.username}: ${message.message}`));
+      scrollToBottom();
     };
   
     const clientNameHandler = (name: string) => {
@@ -44,9 +47,6 @@ const ChatClient: React.FC = () => {
       socket.off('clientName', clientNameHandler);
     };
   }, []);
-  
-  
-  
 
   const sendMessage = () => {
     if (message) {
@@ -58,10 +58,16 @@ const ChatClient: React.FC = () => {
       setMessage('');
     }
   };
-  
 
+  const scrollToBottom = () => {
+    if (chatLogRef.current) { 
+      chatLogRef.current.scrollTop = chatLogRef.current.scrollHeight;
+    }
+  };
+  
   return (
     <Container>
+      <h2>내 익명 번호: {clientName}</h2>
       <InputContainer>
         <Input
           type="text"
@@ -72,11 +78,13 @@ const ChatClient: React.FC = () => {
         />
         <Button onClick={sendMessage}>전송</Button>
       </InputContainer>
-      <ChatLog>
-        {chatLog.map((msg, index) => (
-          <p key={index}>{`${msg}`}</p>
-        ))}
-      </ChatLog>
+      <ChatLogContainer>
+        <ChatLog ref={chatLogRef}>
+          {chatLog.map((msg, index) => (
+            <p key={index}>{`${msg}`}</p>
+          ))}
+        </ChatLog>
+      </ChatLogContainer>
     </Container>
   );
 };
@@ -86,18 +94,22 @@ const Container = styled.div`
   padding: 20px;
   border-radius: 8px;
   width: 100%;
-  max-width: 600px;
+  max-width: 400px;
   margin: 0 auto;
+  border: 2px solid #0074E4; 
+  box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.2); 
+`;
+
+const ChatLogContainer = styled.div`
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 10px; 
 `;
 
 const ChatLog = styled.div`
-  max-height: 300px;
+  max-height: 200px;
   overflow-y: auto;
-  p {
-    margin: 5px 0;
-    border-left: 3px solid #007bff;
-    padding-left: 10px;
-  }
+  padding: 10px; 
 `;
 
 const InputContainer = styled.div`
@@ -118,7 +130,7 @@ const Input = styled.input`
 const Button = styled.button`
   margin-left: 10px;
   padding: 10px 20px;
-  background-color: #007bff;
+  background-color: #0074E4;
   color: #fff;
   border: none;
   border-radius: 4px;
