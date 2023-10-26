@@ -18,8 +18,6 @@ const db = new sqlite3.Database('chat.db', (err) => {
   }
 });
 
-const clientInfo = {};
-
 db.serialize(() => {
   db.run('CREATE TABLE IF NOT EXISTS messages (id INTEGER PRIMARY KEY, username TEXT, message TEXT)', (err) => {
     if (err) {
@@ -45,6 +43,7 @@ io.on('connection', (socket) => {
       socket.emit('initialMessages', rows);
     }
   });
+
   socket.on('message', (data) => {
     const { username, message } = data;
 
@@ -53,11 +52,13 @@ io.on('connection', (socket) => {
         console.error(err.message);
       } else {
         console.log(`Message saved: ${message}`);
+        console.log(`username save: ${username}`);
       }
     });
 
     io.emit('message', `${username}: ${message}`);
   });
+
   socket.on('disconnect', () => {
     console.log(`Client disconnected: ${clientName}`);
   });

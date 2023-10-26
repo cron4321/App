@@ -27,9 +27,9 @@ const ChatClient: React.FC = () => {
     };
   
     const initialMessagesHandler = (messages: any[]) => {
-      setChatLog(messages.map(message => message.message)); // Extract 'message' property from objects
-    };
-  
+      setChatLog(messages.map(message => `${message.username}: ${message.message}`));
+    };    
+    
     const clientNameHandler = (name: React.SetStateAction<string>) => {
       setClientName(name);
     };
