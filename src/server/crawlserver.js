@@ -1,3 +1,6 @@
+require("dotenv").config();
+const webpush = require("web-push");
+const bodyParser = require("body-parser");
 const cheerio = require("cheerio");
 const axios = require("axios");
 const cors = require("cors");
@@ -10,29 +13,25 @@ const app = express();
 const port = 4000;
 
 app.use(cors());
+app.use(bodyParser.json());
+app.use(express.static(path.join(__dirname, "public")));
 
-// 이전 크롤링 결과를 저장하는 변수
-let previousResults = [];
+const results = [];
 
 async function crawlPages() {
-  const baseUrl =
-    "https://www.inu.ac.kr/inu/1534/subview.do";
-  const maxResults = 11; // 결과 개수
-  const results = [];
+  const baseUrl = "https://admission.snu.ac.kr/undergraduate/notice";
+  const maxResults = 15; // 결과 개수
 
   try {
-    // 이전 크롤링 결과를 로드 (최초 실행 시 비어있음)
-    const previousResultsFilePath = path.join(
-      __dirname,
-      "CrawlingDir",
-      "previousResults.json"
-    );
-    if (fs.existsSync(previousResultsFilePath)) {
-      previousResults = JSON.parse(fs.readFileSync(previousResultsFilePath));
+    // 이전에 저장된 데이터 불러오기
+    const filePath2 = path.join(__dirname, "CrawlingDir", "result.json");
+    if (fs.existsSync(filePath2)) {
+      const data = fs.readFileSync(filePath2);
+      storedResults = JSON.parse(data);
     }
 
     for (let currentPage = 1; results.length < maxResults; currentPage++) {
-      const url = `${baseUrl}&pageUnit=10&searchCnd=all&pageIndex=${currentPage}`;
+      const url = `${baseUrl}?page=${currentPage}`;
       const response = await axios.get(url);
       const html = response.data;
       const $ = cheerio.load(html);
@@ -48,21 +47,25 @@ async function crawlPages() {
       elements.each((index, element) => {
         if (results.length < maxResults) {
           const elementData = {
-            title: cleanText($(element).find("td.p-subject a").text()),
-            link:
-              "https://www.kyonggi.ac.kr/www/" +
-              $(element).find("td.p-subject a").attr("href"),
-            number: cleanText($(element).find("td:nth-child(1) span").text()),
-            date: cleanText($(element).find("td:nth-child(7) time").text()),
+            title: cleanText(
+              $(element).find("td.col-title a span span").text()
+            ),
+            link: $(element).find("td.col-title a").attr("href"),
+            date: cleanText($(element).find("td.col-date").text()),
           };
-
-          // 새로운 공지사항인지 확인
-          if (!isInPreviousResults(elementData)) {
+          // 중복된 항목인지 확인 후 저장
+          if (!storedResults.some((item) => item.title === elementData.title)) {
             results.push(elementData);
           }
         }
       });
     }
+
+    // 새 데이터와 이전 데이터를 병합
+    const mergedResults = [...storedResults, ...results.slice(0, maxResults)];
+
+    // 결과 데이터 JSON 파일로 저장
+    fs.writeFileSync(filePath2, JSON.stringify(mergedResults, null, 2));
 
     // 결과 데이터 JSON 파일로 저장
     const CrawlingDir = path.join(__dirname, "CrawlingDir");
@@ -73,19 +76,10 @@ async function crawlPages() {
     const filePath = path.join(CrawlingDir, "result.json");
     fs.writeFileSync(filePath, JSON.stringify(results, null, 2));
 
-    // 현재 결과를 이전 결과로 설정
-    previousResults = results;
-
-    // 데이터를 브라우저에 출력
+    // 데이터 출력
     app.get("/data", (req, res) => {
       res.json(results);
     });
-
-    // 이전 결과를 파일로 저장
-    fs.writeFileSync(
-      previousResultsFilePath,
-      JSON.stringify(previousResults, null, 2)
-    );
 
     // 웹 서버 시작
     app.listen(port, () => {
@@ -100,12 +94,6 @@ function cleanText(text) {
   return text.replace(/\n/g, "").replace(/\s+/g, " ").trim();
 }
 
-function isInPreviousResults(elementData) {
-  // 새로운 공지사항인지 확인하는 함수
-  return previousResults.some(
-    (prevElement) => prevElement.link === elementData.link
-  );
-}
 // 매 30분마다 크롤링 실행
 cron.schedule("*/30 * * * *", () => {
   console.log("크롤링을 실행합니다.");
@@ -113,3 +101,49 @@ cron.schedule("*/30 * * * *", () => {
 });
 
 crawlPages();
+
+if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
+  console.log(
+    "You must set the VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY " +
+      "environment variables. You can use the following ones:"
+  );
+  console.log(webpush.generateVAPIDKeys());
+  return;
+}
+
+//웹 푸시 설정 (VAPID 키 필요)
+webpush.setVapidDetails(
+  "https://github.com/mdn/serviceworker-cookbook/",
+  process.env.VAPID_PUBLIC_KEY,
+  process.env.VAPID_PRIVATE_KEY,
+);
+
+app.post("/register", (req, res) => {
+  const subscription = req.body.subscription;
+  const payload = results[0].title;
+  webpush
+    .sendNotification(subscription, payload)
+    .then(function () {
+      res.sendStatus(201);
+    })
+    .catch(function (error) {
+      console.log(error);
+      res.sendStatus(500);
+    });
+});
+
+app.post("/register", (req, res) => {
+  const subscription = req.body.subscription;
+  const payload = results[0].title
+  webpush
+    .sendNotification(subscription, payload)
+    .then(function () {
+      res.sendStatus(201);
+    })
+    .catch(function (error) {
+      console.log(error);
+      res.sendStatus(500);
+    });
+});
+
+
