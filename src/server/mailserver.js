@@ -74,7 +74,7 @@ app.post('/send-verification-email', (req, res) => {
   const mailOptions = {
     from: '우리 학교 알리미 회원가입',
     to: email,
-    subject: '회원가입 인증 코드',
+    subject: '우리 학교 알리미 회원가입 인증 코드',
     text: `회원가입을 완료하려면 다음 인증 코드를 입력하세요: ${code}`,
   };
 
