@@ -1,8 +1,8 @@
 {
   "Uni1": {
     "name": "",
-    "Host": "admission.snu.ac.kr/",
-    "Path": "undergraduate/notice",
+    "Host": "www.snu.ac.kr",
+    "Path": "snunow/notice/genernal",
     "Query": "?sc=y",
     "titleElement": "td.col-title a span span",
     "linkElement": "td.col-title a",
@@ -10,4 +10,3 @@
     "numberElement": "#board_26924"
   }
 }
-

@@ -8,6 +8,8 @@ const express = require("express");
 const fs = require("fs");
 const path = require("path");
 const cron = require("node-cron");
+const data = require('./UniList.json')
+const Host = data.Uni1.Host
 
 const app = express();
 const port = 4000;
@@ -19,7 +21,7 @@ app.use(express.static(path.join(__dirname, "public")));
 const results = [];
 
 async function crawlPages() {
-  const baseUrl = "http://127.0.0.1:5500/index.html";
+  const baseUrl = "https://www.snu.ac.kr/snunow/notice/genernal";
   const maxResults = 15; // 결과 개수
 
   try {
@@ -50,7 +52,7 @@ async function crawlPages() {
             title: cleanText(
               $(element).find("td.col-title a span span").text()
             ),
-            link: $(element).find("td.col-title a").attr("href"),
+            link: `https://${Host}${$(element).find("td.col-title a").attr("href")}`,
             date: cleanText($(element).find("td.col-date").text()),
           };
           // 중복된 항목인지 확인 후 저장
