@@ -2,7 +2,7 @@ const express = require('express');
 const nodemailer = require('nodemailer');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const sqlite3 = require('sqlite3').verbose();
+const mysql = require('mysql2');
 const app = express();
 const session = require('express-session');
 
@@ -26,29 +26,37 @@ const verificationCodes = new Map();
 let db;
 
 function connectToDatabase() {
-  db = new sqlite3.Database('chat.db', (err) => {
+  db = mysql.createConnection({
+    host: '127.0.0.1',
+    user: 'test',
+    password: '0000',
+    database: 'testdb',
+    port: 3306,
+  });
+
+  db.connect((err) => {
     if (err) {
       console.error('Database connection error:', err);
     } else {
       console.log('Connected to the database.');
 
-      db.run(`
+      db.query(`
         CREATE TABLE IF NOT EXISTS users (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          email TEXT,
-          password TEXT,
-          username TEXT
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          email VARCHAR(255),
+          password VARCHAR(255),
+          username VARCHAR(255)
         )
       `);
 
-      db.run(`
+      db.query(`
         CREATE TABLE IF NOT EXISTS nowloginid (
-          email TEXT,
-          username TEXT
+          email VARCHAR(255),
+          username VARCHAR(255)
         )
       `);
 
-      db.run(`
+      db.query(`
         CREATE TABLE IF NOT EXISTS nowloginsuc (
           status BOOLEAN
         )
@@ -96,18 +104,17 @@ app.post('/verify-verification-code', (req, res) => {
 app.post('/check-duplicate', async (req, res) => {
   const { email, username } = req.body;
 
-  db.get('SELECT * FROM users WHERE email = ? OR username = ?', [email, username], (err, row) => {
+  db.query('SELECT * FROM users WHERE email = ? OR username = ?', [email, username], (err, results) => {
     if (err) {
       console.error('Database error during duplicate check:', err);
       return res.status(500).json({ error: 'Database error during duplicate check' });
     }
 
-    if (row) {
-      if (row.email === email) {
-        res.status(200).json({ emailExists: true });
-      } else {
-        res.status(200).json({ usernameExists: true });
-      }
+    if (results.length > 0) {
+      const existingEmail = results.some((row) => row.email === email);
+      const existingUsername = results.some((row) => row.username === username);
+
+      res.status(200).json({ emailExists: existingEmail, usernameExists: existingUsername });
     } else {
       res.status(200).json({ emailExists: false, usernameExists: false });
     }
@@ -117,29 +124,27 @@ app.post('/check-duplicate', async (req, res) => {
 app.post('/signup', async (req, res) => {
   const { email, password, username } = req.body;
 
-  db.serialize(function () {
-    db.run('BEGIN TRANSACTION', (beginErr) => {
-      if (beginErr) {
-        console.error("Transaction error:", beginErr);
-        return res.status(500).json({ error: "Transaction error" });
+  db.beginTransaction((err) => {
+    if (err) {
+      console.error("Transaction error:", err);
+      return res.status(500).json({ error: "Transaction error" });
+    }
+
+    db.query("INSERT INTO users (email, password, username) VALUES (?, ?, ?)", [email, password, username], (err, results) => {
+      if (err) {
+        console.error('Database error during signup:', err);
+        db.rollback();
+        return res.status(500).json({ error: 'Database error during signup' });
       }
 
-      db.run("INSERT INTO users (email, password, username) VALUES (?, ?, ?)", [email, password, username], function (err) {
-        if (err) {
-          console.error('Database error during signup:', err);
-          db.run('ROLLBACK');
-          return res.status(500).json({ error: 'Database error during signup' });
+      db.commit((commitErr) => {
+        if (commitErr) {
+          console.error("Commit error:", commitErr);
+          return res.status(500).json({ error: "Commit error" });
         }
 
-        db.run('COMMIT', (commitErr) => {
-          if (commitErr) {
-            console.error("Commit error:", commitErr);
-            return res.status(500).json({ error: "Commit error" });
-          }
-
-          console.log("Data Added");
-          res.status(200).json({ message: "회원가입이 완료되었습니다." });
-        });
+        console.log("Data Added");
+        res.status(200).json({ message: "회원가입이 완료되었습니다." });
       });
     });
   });
@@ -157,13 +162,14 @@ app.use(session({
 
 app.post('/login', (req, res) => {
   const { email, password } = req.body;
-  db.get('SELECT * FROM users WHERE email = ? AND password = ?', [email, password], (err, row) => {
+  db.query('SELECT * FROM users WHERE email = ? AND password = ?', [email, password], (err, results) => {
     if (err) {
       console.error('Database error:', err);
       return res.status(500).json({ error: 'Database error' });
     }
 
-    if (row) {
+    if (results.length > 0) {
+      const row = results[0];
       console.log('로그인 성공. 사용자 정보:', row);
 
       const user = {
@@ -176,22 +182,16 @@ app.post('/login', (req, res) => {
 
       res.status(200).json({ token });
 
-      db.run('DELETE FROM nowloginid');
-      const insertUser = db.prepare('INSERT INTO nowloginid (email, username) VALUES (?, ?)');
-      insertUser.run(email, row.username);
-      insertUser.finalize();
-
-      db.run('DELETE FROM nowloginsuc');
-      const insertStatus = db.prepare('INSERT INTO nowloginsuc (status) VALUES (?)');
-      insertStatus.run(true);
-      insertStatus.finalize();
+      db.query('DELETE FROM nowloginid');
+      db.query('INSERT INTO nowloginid (email, username) VALUES (?, ?)', [email, row.username]);
+      db.query('DELETE FROM nowloginsuc');
+      db.query('INSERT INTO nowloginsuc (status) VALUES (true)');
     } else {
       console.error('로그인 실패: 이메일 또는 비밀번호가 잘못됨');
       res.status(400).json({ error: '이메일 또는 비밀번호가 잘못되었습니다.' });
     }
   });
 });
-
 
 app.get("/current-user", (req, res) => {
   const token = req.header("Authorization");
@@ -207,12 +207,13 @@ app.get("/current-user", (req, res) => {
 
     const { email, username } = user;
 
-    db.get("SELECT id FROM nowloginid WHERE email = ?", [email], (err, row) => {
+    db.query("SELECT id FROM nowloginid WHERE email = ?", [email], (err, results) => {
       if (err) {
         console.error("데이터베이스 오류:", err);
         return res.status(500).json({ error: "데이터베이스 오류" });
       }
-      if (row) {
+      if (results.length > 0) {
+        const row = results[0];
         const currentUser = {
           email,
           username,
@@ -225,7 +226,6 @@ app.get("/current-user", (req, res) => {
     });
   });
 });
-
 
 function requireLogin(req, res, next) {
   if (req.session.user) {
@@ -242,28 +242,28 @@ app.get('/protected-route', requireLogin, (req, res) => {
 app.post('/logout', (req, res) => {
   req.session.user = null;
   res.status(200).json({ message: '로그아웃되었습니다.' });
-  db.serialize(function () {
-    db.run('DELETE FROM nowloginid');
-    db.run('DELETE FROM nowloginsuc');
-  });
+
+  db.query('DELETE FROM nowloginid');
+  db.query('DELETE FROM nowloginsuc');
 });
 
 app.get('/user', (req, res) => {
   const user = req.session.user;
-  
+
   if (user) {
     res.status(200).json({
       email: user.email,
       username: user.username,
     });
   } else {
-    db.get('SELECT email, username FROM nowloginid', (err, row) => {
+    db.query('SELECT email, username FROM nowloginid', (err, results) => {
       if (err) {
         console.error('Database error:', err);
         return res.status(500).json({ error: 'Database error' });
       }
-  
-      if (row) {
+
+      if (results.length > 0) {
+        const row = results[0];
         res.status(200).json(row);
       } else {
         res.status(404).json({ error: '사용자 정보를 찾을 수 없습니다.' });
@@ -271,7 +271,6 @@ app.get('/user', (req, res) => {
     });
   }
 });
-
 
 const port = process.env.PORT || 3002;
 app.listen(port, () => {
