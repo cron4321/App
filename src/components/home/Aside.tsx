@@ -5,6 +5,7 @@ import SchoolIcon from "@mui/icons-material/School";
 import LocalDiningIcon from "@mui/icons-material/LocalDining";
 import DirectionsBusIcon from "@mui/icons-material/DirectionsBus";
 import { Link } from "react-router-dom";
+import React from "react";
 
 function Aside() {
   return (

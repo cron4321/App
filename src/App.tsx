@@ -3,9 +3,8 @@ import LoginPage from "./pages/Login";
 import Signup from "./pages/Signup";
 import BoardPage from "./pages/board";
 import MemoPage from "./pages/memo";
-import ChatPage from "../src/components/home/Chatting/Chat";
-import ChatRoom from "../src/components/home/Chatting/ChatRoom";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import React from "react";
 
 function App() {
   return (
@@ -16,8 +15,6 @@ function App() {
         <Route path="/board" element={<BoardPage />}></Route>
         <Route path="/login" element={<LoginPage />}></Route>
         <Route path="/signup" element={<Signup />}></Route>
-        <Route path="/chat" element={<ChatPage />}></Route> 
-        <Route path="/chatroom/:id" element={<ChatRoom />}></Route>
       </Routes>
     </BrowserRouter>
   );

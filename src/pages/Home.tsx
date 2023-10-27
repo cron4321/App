@@ -3,7 +3,7 @@ import Main from "../components/home/Main";
 import Aside from "../components/home/Aside";
 import Footer from "../components/home/Footer";
 import styled from "styled-components";
-import ChatButton from "../components/home/Chatting/Chat";
+import React from "react";
 
 function HomePage() {
   return (
@@ -12,7 +12,6 @@ function HomePage() {
       <Main mynumber={7}/>
       <Aside />
       <Footer />
-      <ChatButton />
     </Container>
   );
 }
@@ -23,7 +22,6 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   width: 100%;
-  height: 100%;
   background: f9f9f9;
 `;
 

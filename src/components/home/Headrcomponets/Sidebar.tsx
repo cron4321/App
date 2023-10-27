@@ -24,14 +24,12 @@ const Sidebar = forwardRef(function Sidebar({ isSidebarOpen, userNickname, userE
         <SidebarItem onClick={() => { window.location.href = "/Login"; }}>로그인</SidebarItem>
       )}
       <SidebarItem>학교 변경</SidebarItem>
-      <ExitButton onClick={exit}>닫기</ExitButton>
     </SidebarContainer>
   );
 });
 
 const SidebarContainer = styled.div<{ isSidebarOpen: boolean }>`
   width: 250px;
-  height: 100%;
   background: #333;
   display: flex;
   flex-direction: column;
@@ -46,21 +44,12 @@ const SidebarContainer = styled.div<{ isSidebarOpen: boolean }>`
   opacity: ${(props) => (props.isSidebarOpen ? 1 : 0)};
   visibility: ${(props) => (props.isSidebarOpen ? "visible" : "hidden")};
   overflow: hidden;
+  border-radius: 12px;
 `;
 
 const SidebarItem = styled.div`
   margin-bottom: 20px;
   cursor: pointer;
-`;
-
-const ExitButton = styled.button`
-  background: #0074e4;
-  color: #fff;
-  border: none;
-  border-radius: 5px;
-  padding: 5px;
-  cursor: pointer;
-  margin-top: 10px;
 `;
 
 export default Sidebar;

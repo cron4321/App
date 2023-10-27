@@ -7,81 +7,80 @@ import MenuIcon from "@mui/icons-material/Menu";
 import axios from "axios";
 
 function Header() {
-  // const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  // const [userEmail, setUserEmail] = useState("");
-  // const [userNickname, setUserNickname] = useState("");
-  // const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [userEmail, setUserEmail] = useState("");
+  const [userNickname, setUserNickname] = useState("");
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const sidebarRef = useRef<HTMLDivElement | null>(null);
 
-  // const exit = () => {
-  //   setIsSidebarOpen(!isSidebarOpen);
-  // };
+  const exit = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
 
-  // const handleLogout = async () => {
-  //   try {
-  //     await axios.post("http://localhost:3002/logout");
-  //     setUserEmail("");
-  //     setUserNickname("");
-  //     setIsLoggedIn(false);
-  //     alert("로그아웃 되었습니다");
-  //   } catch (error) {
-  //     console.error("로그아웃 오류:", error);
-  //     alert("로그아웃 중 오류가 발생했습니다.");
-  //   }
-  // };
+  const handleLogout = async () => {
+    try {
+      await axios.post("http://localhost:3002/logout");
+      setUserEmail("");
+      setUserNickname("");
+      setIsLoggedIn(false);
+      alert("로그아웃 되었습니다");
+    } catch (error) {
+      console.error("로그아웃 오류:", error);
+      alert("로그아웃 중 오류가 발생했습니다.");
+    }
+  };
 
-  // useEffect(() => {
-  //   function handleClickOutside(event: MouseEvent) {
-  //     if (
-  //       sidebarRef.current &&
-  //       !sidebarRef.current.contains(event.target as Node)
-  //     ) {
-  //       setIsSidebarOpen(false);
-  //     }
-  //   }
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        sidebarRef.current &&
+        !sidebarRef.current.contains(event.target as Node)
+      ) {
+        setIsSidebarOpen(false);
+      }
+    }
 
-  //   if (isSidebarOpen) {
-  //     document.addEventListener("mousedown", handleClickOutside);
-  //   } else {
-  //     document.removeEventListener("mousedown", handleClickOutside);
-  //   }
+    if (isSidebarOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
 
-  //   return () => {
-  //     document.removeEventListener("mousedown", handleClickOutside);
-  //   };
-  // }, [isSidebarOpen]);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isSidebarOpen]);
 
-  // useEffect(() => {
-  //   const fetchUserData = async () => {
-  //     try {
-  //       const response = await axios.get('http://localhost:3002/user');
-  //       const userData = response.data;
-  //       if (userData.email && userData.username) {
-  //         setIsLoggedIn(true);
-  //         setUserEmail(userData.email);
-  //         setUserNickname(userData.username);
-  //       } else {
-  //         setIsLoggedIn(false);
-  //       }
-  //     } catch (error) {
-  //       console.error('사용자 정보 불러오기 오류:', error);
-  //     }
-  //   };
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await axios.get('http://localhost:3002/user');
+        const userData = response.data;
+        if (userData.email && userData.username) {
+          setIsLoggedIn(true);
+          setUserEmail(userData.email);
+          setUserNickname(userData.username);
+        } else {
+          setIsLoggedIn(false);
+        }
+      } catch (error) {
+        console.error('사용자 정보 불러오기 오류:', error);
+      }
+    };
 
-  //   fetchUserData();
-  // }, []);
+    fetchUserData();
+  }, []);
 
   return (
     <HeaderContainer>
-      {/* <MenuButton onClick={exit}>
+      <MenuButton onClick={exit}>
         <MenuIcon />
-      </MenuButton> */}
+      </MenuButton>
       <Link to="/" style={{ textDecoration: "none", color: "#fff" }}>
         <HeaderText>우리 학교 알리미</HeaderText>
       </Link>
-      {/* <Alarm isSidebarOpen={isSidebarOpen} onLogout={handleLogout} />
-
+      <Alarm isSidebarOpen={isSidebarOpen} onLogout={handleLogout} />
       <Sidebar
         isSidebarOpen={isSidebarOpen}
         ref={sidebarRef}
@@ -89,7 +88,7 @@ function Header() {
         userEmail={userEmail}
         onLogout={handleLogout}
         exit={exit}
-      /> */}
+      />
     </HeaderContainer>
   );
 }
@@ -117,25 +116,6 @@ const MenuButton = styled.div`
 const HeaderText = styled.h1`
   color: #fff;
   text-decoration: none;
-`;
-
-const UserInfoContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  color: #fff;
-`;
-
-const UserInfo = styled.span`
-  margin: 4px;
-`;
-
-const LogoutButton = styled.button`
-  background: none;
-  border: none;
-  color: #fff;
-  cursor: pointer;
-  text-decoration: underline;
 `;
 
 export default Header;

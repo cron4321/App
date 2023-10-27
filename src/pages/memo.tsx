@@ -4,6 +4,7 @@ import styled from "styled-components";
 import Header from "../components/home/Header";
 import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
+import React from "react";
 
 Modal.setAppElement("#root");
 

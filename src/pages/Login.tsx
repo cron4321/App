@@ -17,13 +17,13 @@ function LoginPage() {
         const response = await axios.post('http://localhost:3002/login', { email, password });
 
         if (response.status === 200) {
-          const user = response.data.user;
+          const token = response.data.token;
 
-          if (user) {
-            setLoggedInUser(user);
+          if (token) {
+            localStorage.setItem('userToken', token);
 
-            console.log('로그인 성공. 사용자 정보:', user);
-            navigate('/');
+            console.log('로그인 성공.');
+            navigate('/'); 
           } else {
             alert('이메일 또는 비밀번호가 잘못되었습니다.');
           }
@@ -39,15 +39,15 @@ function LoginPage() {
     }
   }
 
-  const HomeLink = styled(Link)`
-    text-decoration: none; 
-    color: inherit; 
-  `;
+  const HomeLink = styled.a`
+  text-decoration: none;
+  color: inherit;
+`;
 
   return (
     <Container>
       <Header>
-        <HomeLink to="/">우리 학교 알리미</HomeLink>
+        <HomeLink href='/'>우리 학교 알리미</HomeLink>
         <br />로그인
       </Header>
       <LoginForm

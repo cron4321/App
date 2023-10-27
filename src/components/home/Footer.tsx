@@ -1,6 +1,8 @@
 import styled from "styled-components";
 import AddIcon from "@mui/icons-material/Add";
 import { Itemprops } from "../../types";
+import React from "react";
+import EveryChatting from "./Chatting/Everychat";
 
 function Footer() {
   const numberOfFooterContents = 10;
@@ -22,14 +24,16 @@ function Footer() {
           )}
         </FooterBody>
       </FooterForm>
+      <ChatContainer>
+        <EveryChatting />
+      </ChatContainer>
     </FooterContainer>
   );
 }
 
-export default Footer;
-
 const FooterContainer = styled.div`
   display: flex;
+  flex-direction: column;
   background-color: #f9f9f9;
   padding: 16px 24px 36px 24px;
 `;
@@ -84,3 +88,9 @@ const FooterContent = styled.div`
   border-radius: 12px;
   background: #ffffff;
 `;
+
+const ChatContainer = styled.div`
+  margin-top: 50px;
+`;
+
+export default Footer;
