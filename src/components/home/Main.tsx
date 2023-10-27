@@ -5,7 +5,7 @@ import axios from "axios";
 import { Link } from "react-router-dom";
 import { Itemprops } from "../../types";
 
-function Main({acount}: { acount: number }) {
+function Main({ mynumber }: { mynumber: number }) {
   const [data, setData] = useState<Itemprops[]>([]);
 
   useEffect(() => {
@@ -25,7 +25,7 @@ function Main({acount}: { acount: number }) {
           <MainTitle>공지사항</MainTitle>
           <AddIcon sx={{ width: 30, height: 30, marginRight: "16px" }} />
         </MainHeader>
-        {data.slice(0, acount).map((item, index) => (
+        {data.slice(0, mynumber).map((item, index) => (
           <SectionContents key={index}>
             <Line />
             <List to={item.link}>

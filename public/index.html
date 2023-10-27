@@ -18,48 +18,81 @@
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
     <script>
-      if ("serviceWorker" in navigator) {
-        window.addEventListener("load", () => {
-          navigator.serviceWorker
-            .register("/service-worker.js")
-            .then(function (registration) {
-              swRegistration = registration; // swRegistration 변수에 등록 정보를 할당
-              console.log("Service Worker 등록 성공:", registration.scope);
-            })
-            .catch((error) => {
-              console.error("Service Worker 등록 실패:", error);
+      navigator.serviceWorker.register("service-worker.js");
+      navigator.serviceWorker.ready
+        .then(function (registration) {
+          return registration.pushManager
+            .getSubscription()
+            .then(async function (subscription) {
+              // If a subscription was found, return it.
+              if (subscription) {
+                return subscription;
+              }
+              // Get the server's public key
+              const response = await fetch(
+                "http://localhost:4000/vapidPublicKey"
+              );
+              const vapidPublicKey = await response.text();
+
+              const convertedVapidKey = urlBase64ToUint8Array(vapidPublicKey);
+
+              return registration.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: convertedVapidKey,
+              });
             });
-        });
-      }
-      document
-        .getElementById("subscribeButton")
-        .addEventListener("click", async () => {
-          const subscription = await swRegistration.pushManager.subscribe({
-            userVisibleOnly: true,
-            applicationServerKey:
-              "BHp9ZlPMw8ZT8zQulwhiyCPY8bdoqxxU6bJaaJV5DQSIJf6vGfoe_w0bx-UaQC55vaXzsxLiHbtWumTJVsupZlQ", // 서버의 공개 VAPID 키
-          });
+        })
+        .then(function (subscription) {
+          // Send the subscription details to the server using the Fetch API.
           fetch("http://localhost:4000/register", {
-            method: "POST",
-            body: JSON.stringify(subscription),
+            method: "post",
             headers: {
-              "Content-Type": "application/json",
+              "Content-type": "application/json",
             },
             body: JSON.stringify({
               subscription: subscription,
             }),
-          })
-            .then((response) => {
-              if (response.status === 201) {
-                console.log("구독 정보 전송 성공");
-              } else {
-                console.error("구독 정보 전송 실패");
-              }
-            })
-            .catch((error) => {
-              console.error("구독 정보 전송 오류:", error);
+          });
+          document
+            .getElementById("subscribeButton")
+            .addEventListener("click", async () => {
+              fetch("http://localhost:4000/sendNotification", {
+                method: "POST",
+                body: JSON.stringify(subscription),
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  subscription: subscription,
+                }),
+              })
+                .then((response) => {
+                  if (response.status === 201) {
+                    console.log("구독 정보 전송 성공");
+                  } else {
+                    console.error("구독 정보 전송 실패");
+                  }
+                })
+                .catch((error) => {
+                  console.error("구독 정보 전송 오류:", error);
+                });
             });
         });
+
+      function urlBase64ToUint8Array(base64String) {
+        var padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+        var base64 = (base64String + padding)
+          .replace(/\-/g, "+")
+          .replace(/_/g, "/");
+
+        var rawData = window.atob(base64);
+        var outputArray = new Uint8Array(rawData.length);
+
+        for (var i = 0; i < rawData.length; ++i) {
+          outputArray[i] = rawData.charCodeAt(i);
+        }
+        return outputArray;
+      }
     </script>
   </body>
 </html>

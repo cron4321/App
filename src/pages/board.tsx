@@ -4,7 +4,7 @@ import Main from "../components/home/Main";
 function BoardPage() {
   return (
     <Container>
-      <Main acount={15}/>
+      <Main mynumber={15}/>
     </Container>
   );
 }

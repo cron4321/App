@@ -19,17 +19,17 @@ app.use(express.static(path.join(__dirname, "public")));
 const results = [];
 
 async function crawlPages() {
-  const baseUrl = "https://admission.snu.ac.kr/undergraduate/notice";
+  const baseUrl = "http://127.0.0.1:5500/index.html";
   const maxResults = 15; // 결과 개수
 
   try {
     // 이전에 저장된 데이터 불러오기
+    let storedResults = [];
     const filePath2 = path.join(__dirname, "CrawlingDir", "result.json");
     if (fs.existsSync(filePath2)) {
       const data = fs.readFileSync(filePath2);
       storedResults = JSON.parse(data);
     }
-
     for (let currentPage = 1; results.length < maxResults; currentPage++) {
       const url = `${baseUrl}?page=${currentPage}`;
       const response = await axios.get(url);
@@ -54,27 +54,15 @@ async function crawlPages() {
             date: cleanText($(element).find("td.col-date").text()),
           };
           // 중복된 항목인지 확인 후 저장
-          if (!storedResults.some((item) => item.title === elementData.title)) {
+          const isDuplicate = storedResults.some(
+            (item) => item.title === elementData.title
+          );
+          if (!isDuplicate) {
             results.push(elementData);
           }
         }
       });
     }
-
-    // 새 데이터와 이전 데이터를 병합
-    const mergedResults = [...storedResults, ...results.slice(0, maxResults)];
-
-    // 결과 데이터 JSON 파일로 저장
-    fs.writeFileSync(filePath2, JSON.stringify(mergedResults, null, 2));
-
-    // 결과 데이터 JSON 파일로 저장
-    const CrawlingDir = path.join(__dirname, "CrawlingDir");
-    if (!fs.existsSync(CrawlingDir)) {
-      fs.mkdirSync(CrawlingDir);
-    }
-
-    const filePath = path.join(CrawlingDir, "result.json");
-    fs.writeFileSync(filePath, JSON.stringify(results, null, 2));
 
     // 데이터 출력
     app.get("/data", (req, res) => {
@@ -95,7 +83,7 @@ function cleanText(text) {
 }
 
 // 매 30분마다 크롤링 실행
-cron.schedule("*/30 * * * *", () => {
+cron.schedule("*/10 * * * *", () => {
   console.log("크롤링을 실행합니다.");
   crawlPages();
 });
@@ -122,14 +110,24 @@ if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
 
 //웹 푸시 설정 (VAPID 키 필요)
 webpush.setVapidDetails(
-  "https://github.com/mdn/serviceworker-cookbook/",
+  "mailto:your@email.com",
   process.env.VAPID_PUBLIC_KEY,
-  process.env.VAPID_PRIVATE_KEY,
+  process.env.VAPID_PRIVATE_KEY
 );
 
+app.get("/vapidPublicKey", function (req, res) {
+  res.send(process.env.VAPID_PUBLIC_KEY);
+});
+
 app.post("/register", (req, res) => {
+  res.sendStatus(201);
+});
+
+app.post("/sendNotification", (req, res) => {
   const subscription = req.body.subscription;
-  const payload = results[0].title
+  const payload = JSON.stringify({
+    body: results[0].title,
+  });
   webpush
     .sendNotification(subscription, payload)
     .then(function () {
@@ -140,3 +138,24 @@ app.post("/register", (req, res) => {
       res.sendStatus(500);
     });
 });
+
+// 새로운 데이터에 대한 푸시 알림 보내는 함수
+function sendPushNotifications(newResults) {
+  newResults.forEach((newResult) => {
+    const payload = JSON.stringify({
+      body: newResult.title,
+    });
+
+    // 모든 구독 정보에 대해 푸시 알림 보내기
+    subscriptions.forEach((subscription) => {
+      webpush
+        .sendNotification(subscription, payload)
+        .then(function () {
+          console.log("푸시 알림 보내기 성공");
+        })
+        .catch(function (error) {
+          console.error("푸시 알림 보내기 오류:", error);
+        });
+    });
+  });
+}

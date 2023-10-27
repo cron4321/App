@@ -9,7 +9,7 @@ function HomePage() {
   return (
     <Container>
       <Header />
-      <Main acount={7}/>
+      <Main mynumber={7}/>
       <Aside />
       <Footer />
       <ChatButton />
