@@ -1,6 +1,5 @@
 import Header from "../components/home/Header";
 import Main from "../components/home/Main";
-import Aside from "../components/home/Aside";
 import Footer from "../components/home/Footer";
 import styled from "styled-components";
 import React from "react";
@@ -10,7 +9,6 @@ function HomePage() {
     <Container>
       <Header />
       <Main mynumber={7}/>
-      <Aside />
       <Footer />
     </Container>
   );

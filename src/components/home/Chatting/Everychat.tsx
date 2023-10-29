@@ -17,34 +17,38 @@ const ChatClient: React.FC = () => {
   const [message, setMessage] = useState('');
   const [chatLog, setChatLog] = useState<string[]>([]);
   const [clientName, setClientName] = useState<string>(''); 
-  const chatLogRef = useRef<HTMLDivElement | null>(null); 
+  const chatLogRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    socket.emit('requestClientName');
-  
+    fetch('http://localhost:3004/getClientName')
+      .then((response) => response.json())
+      .then((data) => {
+        setClientName(data.clientName);
+      })
+      .catch((error) => {
+        console.error('익명 번호 가져오기 오류:', error);
+      });
+
+    fetch('http://localhost:3004/getInitialMessages')
+      .then((response) => response.json())
+      .then((data) => {
+        setChatLog(data.messages);
+        scrollToBottom();
+      })
+      .catch((error) => {
+        console.error('초기 채팅 내용 가져오기 오류:', error);
+      });
+
     const messageHandler = (message: string) => {
       console.log(`Received message: ${message}`);
       setChatLog((prevLog) => [...prevLog, message]);
       scrollToBottom();
     };
-  
-    const initialMessagesHandler = (messages: any[]) => {
-      setChatLog(messages.map(message => `${message.username}: ${message.message}`));
-      scrollToBottom();
-    };
-  
-    const clientNameHandler = (name: string) => {
-      setClientName(name);
-    };
-  
+
     socket.on('message', messageHandler);
-    socket.on('initialMessages', initialMessagesHandler);
-    socket.on('clientName', clientNameHandler);
-  
+
     return () => {
       socket.off('message', messageHandler);
-      socket.off('initialMessages', initialMessagesHandler);
-      socket.off('clientName', clientNameHandler);
     };
   }, []);
 
@@ -64,7 +68,7 @@ const ChatClient: React.FC = () => {
       chatLogRef.current.scrollTop = chatLogRef.current.scrollHeight;
     }
   };
-  
+
   return (
     <Container>
       <h2>내 익명 번호: {clientName}</h2>

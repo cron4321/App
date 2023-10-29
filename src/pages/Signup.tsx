@@ -131,7 +131,7 @@ function Signup() {
     setIsVerificationCodeValid(true);
   };
 
-  const HomeLink = styled.a`
+  const HomeLink = styled(Link)`
     text-decoration: none;
     color: inherit;
   `;
@@ -139,7 +139,7 @@ function Signup() {
   return (
     <Container>
       <Header>
-      <HomeLink href='/'>우리 학교 알리미</HomeLink>
+      <HomeLink to='/'>우리 학교 알리미</HomeLink>
         <br />회원가입
       </Header>
       {isSignUpSuccessful ? (

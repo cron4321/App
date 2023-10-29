@@ -39,7 +39,7 @@ function LoginPage() {
     }
   }
 
-  const HomeLink = styled.a`
+  const HomeLink = styled(Link)`
   text-decoration: none;
   color: inherit;
 `;
@@ -47,7 +47,7 @@ function LoginPage() {
   return (
     <Container>
       <Header>
-        <HomeLink href='/'>우리 학교 알리미</HomeLink>
+        <HomeLink to='/'>우리 학교 알리미</HomeLink>
         <br />로그인
       </Header>
       <LoginForm

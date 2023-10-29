@@ -82,11 +82,11 @@ function cleanText(text) {
   return text.replace(/\n/g, "").replace(/\s+/g, " ").trim();
 }
 
-// 매 30분마다 크롤링 실행
-cron.schedule("*/10 * * * *", () => {
+// // 매 30분마다 크롤링 실행
+// cron.schedule("*/10 * * * *", () => {
   console.log("크롤링을 실행합니다.");
   crawlPages();
-});
+// });
 
 crawlPages();
 

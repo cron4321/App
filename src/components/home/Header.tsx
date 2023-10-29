@@ -1,3 +1,5 @@
+// Header.tsx
+
 import React, { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
 import { Link } from "react-router-dom";
@@ -11,6 +13,7 @@ function Header() {
   const [userEmail, setUserEmail] = useState("");
   const [userNickname, setUserNickname] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [selectedSchool, setSelectedSchool] = useState("");
 
   const sidebarRef = useRef<HTMLDivElement | null>(null);
 
@@ -24,6 +27,7 @@ function Header() {
       setUserEmail("");
       setUserNickname("");
       setIsLoggedIn(false);
+      setSelectedSchool(""); 
       alert("로그아웃 되었습니다");
     } catch (error) {
       console.error("로그아웃 오류:", error);
@@ -61,6 +65,7 @@ function Header() {
           setIsLoggedIn(true);
           setUserEmail(userData.email);
           setUserNickname(userData.username);
+          setSelectedSchool(userData.selectedSchool || "");
         } else {
           setIsLoggedIn(false);
         }
@@ -78,7 +83,15 @@ function Header() {
         <MenuIcon />
       </MenuButton>
       <Link to="/" style={{ textDecoration: "none", color: "#fff" }}>
-        <HeaderText>우리 학교 알리미</HeaderText>
+        <HeaderText>
+          {selectedSchool ? (
+            <>
+              {selectedSchool} 알리미
+            </>
+          ) : (
+            "우리 학교 알리미"
+          )}
+        </HeaderText>
       </Link>
       <Alarm isSidebarOpen={isSidebarOpen} onLogout={handleLogout} />
       <Sidebar
@@ -87,7 +100,7 @@ function Header() {
         userNickname={userNickname}
         userEmail={userEmail}
         onLogout={handleLogout}
-        exit={exit}
+        setSelectedSchool={setSelectedSchool} 
       />
     </HeaderContainer>
   );
@@ -116,6 +129,12 @@ const MenuButton = styled.div`
 const HeaderText = styled.h1`
   color: #fff;
   text-decoration: none;
+`;
+
+const SchoolName = styled.span`
+  color: #ddd;
+  font-size: 12px;
+  margin-left: 8px;
 `;
 
 export default Header;

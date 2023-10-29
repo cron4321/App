@@ -39,19 +39,29 @@ connection.query(
 
 let clientCount = 0;
 
-io.on('connection', (socket) => {
+app.get('/getClientName', (req, res) => {
   clientCount++;
+  const clientName = `익명${clientCount}`;
+  res.json({ clientName });
+});
+
+app.get('/getInitialMessages', (req, res) => {
+  connection.query('SELECT * FROM messages', (err, results) => {
+    if (!err) {
+      const messages = results.map((row) => `${row.username}: ${row.message}`);
+      res.json({ messages });
+    } else {
+      res.status(500).json({ error: '초기 채팅 내용을 가져오는 중 오류가 발생했습니다.' });
+    }
+  });
+});
+
+io.on('connection', (socket) => {
   const clientName = `익명${clientCount}`;
 
   console.log(`Client connected: ${clientName}`);
   
   socket.emit('clientName', clientName);
-
-  connection.query('SELECT * FROM messages', (err, results) => {
-    if (!err) {
-      socket.emit('initialMessages', results);
-    }
-  });
 
   socket.on('message', (data) => {
     const { username, message } = data;

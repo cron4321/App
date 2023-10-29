@@ -1,17 +1,23 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Modal from "react-modal";
 import styled from "styled-components";
 import Header from "../components/home/Header";
 import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
+import Axios from "axios";
 import React from "react";
 
 Modal.setAppElement("#root");
 
 interface Memo {
+  id: number;
   title: string;
   content: string;
 }
+
+const axios = Axios.create({
+  baseURL: "http://localhost:5000", 
+});
 
 function MemoPage() {
   const [memos, setMemos] = useState<Memo[]>([]);
@@ -20,6 +26,16 @@ function MemoPage() {
   const [modalMemoIndex, setModalMemoIndex] = useState(-1);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+
+  useEffect(() => {
+    axios.get("/api/memos")
+      .then((response) => {
+        setMemos(response.data);
+      })
+      .catch((error) => {
+        console.error("메모 데이터 불러오기 오류:", error);
+      });
+  }, []);
 
   const openModal = () => {
     setModalIsOpen(true);
@@ -42,24 +58,48 @@ function MemoPage() {
 
   const addMemo = () => {
     if (title || content) {
+      const memoData = { title, content };
       if (modalEditMode) {
-        const updatedMemos = [...memos];
-        updatedMemos[modalMemoIndex] = { title, content };
-        setMemos(updatedMemos);
+        axios.put(`/api/memos/${memos[modalMemoIndex].id}`, memoData)
+          .then(() => {
+            const updatedMemos = [...memos];
+            updatedMemos[modalMemoIndex] = { ...memoData, id: memos[modalMemoIndex].id };
+            setMemos(updatedMemos);
+          })
+          .catch((error) => {
+            console.error("메모 데이터 수정 오류:", error);
+          });
       } else {
-        setMemos([...memos, { title, content }]);
+        axios.post("/api/memos", memoData)
+          .then((response) => {
+            const newMemo = { ...memoData, id: response.data.insertId }; 
+            setMemos([...memos, newMemo]);
+          })
+          .catch((error) => {
+            console.error("메모 데이터 추가 오류:", error);
+          });
       }
       setTitle("");
       setContent("");
+      closeModal();
     }
-    closeModal();
   };
 
-  const deletMemo = () => {
+  const deleteMemo = () => {
     if (modalEditMode) {
-      const updatedMemos = [...memos];
-      updatedMemos.splice(modalMemoIndex, 1);
-      setMemos(updatedMemos);
+      const memoIdToDelete = memos[modalMemoIndex].id;
+      if (memoIdToDelete === undefined || memoIdToDelete === null) {
+        console.error("올바르지 않은 메모 ID:", memoIdToDelete);
+        return;
+      }
+      axios.delete(`/api/memos/${memoIdToDelete}`)
+        .then(() => {
+          const updatedMemos = memos.filter((memo, index) => index !== modalMemoIndex);
+          setMemos(updatedMemos);
+        })
+        .catch((error) => {
+          console.error("메모 데이터 삭제 오류:", error);
+        });
       closeModal();
     }
   };
@@ -121,7 +161,7 @@ function MemoPage() {
             <SaveButton onClick={addMemo}>
               {modalEditMode ? "수정" : "저장"}
             </SaveButton>
-            <DeleteButton onClick={deletMemo}>삭제</DeleteButton>
+            <DeleteButton onClick={deleteMemo}>삭제</DeleteButton>
           </ModalFooter>
         </ModalContainer>
       </Modal>
@@ -158,6 +198,7 @@ const Title = styled.h1`
 const AddButton = styled.div`
   padding: 15px 40px 16px 0;
   color: #000000;
+  cursor: pointer;
 `;
 
 const Main = styled.main`
@@ -181,11 +222,27 @@ const Memo = styled.div`
   padding: 10px;
   position: relative;
   background-color: #ffffff;
+  overflow: hidden; /* 내용을 넘어가지 않도록 함 */
+  text-overflow: ellipsis; /* 긴 텍스트를 ...으로 표시 */
+  white-space: nowrap; /* 줄 바꿈 없이 텍스트 표시 */
 `;
 
-const MemoTitle = styled.h3``;
 
-const MemoContent = styled.p``;
+const MemoTitle = styled.h3`
+  max-height: 2.4em; 
+  overflow: hidden; 
+  text-overflow: ellipsis; 
+  white-space: normal;
+  margin-bottom: 8px; 
+`;
+
+const MemoContent = styled.p`
+  max-height: 7.0em;
+  overflow: hidden;
+  text-overflow: ellipsis; 
+  white-space: pre-wrap; 
+`;
+
 
 const ModalContainer = styled.div`
   display: flex;
@@ -223,6 +280,7 @@ const ModalContent = styled.textarea`
   border-radius: 12px;
   width: 100%;
   height: 100%;
+  text-overflow: ellipsis;
 `;
 
 const ModalFooter = styled.div`
