@@ -8,7 +8,7 @@ const express = require("express");
 const fs = require("fs");
 const path = require("path");
 const cron = require("node-cron");
-const mysql = require("mysql");
+const mysql2 = require("mysql2");
 const data = require("./UniList.json");
 const Host = data.Uni1.Host;
 
@@ -19,12 +19,12 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, "public")));
 
-const connection = mysql.createConnection({
-  host: "127.0.0.1",
-  user: "testuser1",
-  password: "1234",
-  database: "test_db",
-  port: 3306,
+const connection = mysql2.createConnection({
+  host: '52.78.105.126',
+  user: '2team',
+  password: '1234',
+  database: 'projectdb',
+  port: 31212,
 });
 
 connection.connect((err) => {
