@@ -140,12 +140,12 @@ function Signup() {
     <Container>
       <Header>
       <HomeLink to='/'>우리 학교 알리미</HomeLink>
-        <br />회원가입
+        <Br />회원가입
       </Header>
       {isSignUpSuccessful ? (
         <SuccessMessage>회원가입 완료<br/><Link to="/login">로그인 창으로</Link></SuccessMessage>
       ) : (
-        <div>
+        <Div>
           <UserForm
             user={user}
             handleInputChange={handleInputChange}
@@ -175,13 +175,16 @@ function Signup() {
             회원가입
           </Button>
           <LoginBack>
-            <br />
+            <Br />
             이미 계정이 있으신가요? <Link to="/Login">로그인</Link>
           </LoginBack>
-        </div>
+        </Div>
       )}
     </Container>
   );
 }
+
+const Br = styled.br``;
+const Div = styled.div``;
 
 export default Signup;

@@ -48,7 +48,7 @@ function LoginPage() {
     <Container>
       <Header>
         <HomeLink to='/'>우리 학교 알리미</HomeLink>
-        <br />로그인
+        <Br />로그인
       </Header>
       <LoginForm
         email={email}
@@ -60,12 +60,16 @@ function LoginPage() {
       <SignupPage>아직 계정이 없으신가요? <Link to="/Signup">회원가입</Link></SignupPage>
 
       {loggedInUser && loggedInUser.username ? (
-        <div>
-          <p>로그인 성공! 사용자 정보: {loggedInUser.username} ({loggedInUser.email})</p>
-        </div>
+        <Div>
+          <P>로그인 성공! 사용자 정보: {loggedInUser.username} ({loggedInUser.email})</P>
+        </Div>
       ) : null}
     </Container>
   );
 }
+
+const Br = styled.br``;
+const Div = styled.div``;
+const P = styled.p``;
 
 export default LoginPage;
