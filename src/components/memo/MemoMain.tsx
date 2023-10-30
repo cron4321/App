@@ -1,5 +1,6 @@
 import styled from "styled-components";
 import { Itemprops } from "../../types";
+import React from "react";
 
 function MemoMain(props: Itemprops) {
   const { memos, openEditModal } = props;
@@ -25,8 +26,8 @@ const Memo = styled.div`
   display: flex;
   width: 159px;
   height: 225px;
-  border-radius: 12px;
-  border: 1px solid #0074e4;
+  border-radius: 8px;
+  border: 2px solid #0074E4; 
   cursor: pointer;
   flex-direction: column;
   padding: 10px;

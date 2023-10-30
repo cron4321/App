@@ -5,18 +5,19 @@ import SchoolIcon from "@mui/icons-material/School";
 import LocalDiningIcon from "@mui/icons-material/LocalDining";
 import DirectionsBusIcon from "@mui/icons-material/DirectionsBus";
 import { Link } from "react-router-dom";
+import React from "react";
 
 function Aside() {
   return (
     <AsideContainer>
       <AsideForm>
-        <List to={"https://www.kyonggi.ac.kr/www/index.do"}>
+        <List to={"https://www.snu.ac.kr/"}>
           <HomeIcon sx={{ width: 48, height: 48 }} />
           <IconText>홈페이지</IconText>
         </List>
         <List
           to={
-            "https://www.kyonggi.ac.kr/www/selectBbsNttList.do?key=7520&bbsNo=1073"
+            "https://www.snu.ac.kr/snunow/notice/genernal?sc=y"
           }
         >
           <CampaignIcon sx={{ width: 48, height: 48 }} />
@@ -24,7 +25,7 @@ function Aside() {
         </List>
         <List
           to={
-            "https://www.kyonggi.ac.kr/www/selectTnSchafsSchdulListUS.do?key=5695&sc1=10"
+            "https://www.snu.ac.kr/academics/resources/calendar"
           }
         >
           <SchoolIcon sx={{ width: 48, height: 48 }} />
@@ -32,13 +33,13 @@ function Aside() {
         </List>
         <List
           to={
-            "https://www.kyonggi.ac.kr/www/selectTnRstrntMenuListU.do?key=7138&sc1=30&"
+            "https://snuco.snu.ac.kr/ko/foodmenu"
           }
         >
           <LocalDiningIcon sx={{ width: 48, height: 48 }} />
           <IconText>식당메뉴</IconText>
         </List>
-        <List to={"https://www.kyonggi.ac.kr/www/contents.do?key=5749"}>
+        <List to={"https://www.snu.ac.kr/about/gwanak/shuttles/campus_shuttles"}>
           <DirectionsBusIcon sx={{ width: 48, height: 48 }} />
           <IconText>셔틀버스</IconText>
         </List>

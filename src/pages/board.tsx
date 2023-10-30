@@ -1,5 +1,6 @@
 import styled from "styled-components";
 import Main from "../components/home/Main";
+import React from "react";
 
 function BoardPage() {
   return (

@@ -6,6 +6,7 @@ import MemoPage from "./pages/memo";
 import ChatPage from "../src/components/home/Chatting/Chat";
 import ChatRoom from "../src/components/home/Chatting/ChatRoom";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import React from "react";
 
 function App() {
   return (
