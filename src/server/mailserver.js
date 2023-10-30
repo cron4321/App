@@ -27,11 +27,11 @@ let db;
 
 function connectToDatabase() {
   db = mysql.createConnection({
-    host: '127.0.0.1',
-    user: 'test',
-    password: '0000',
-    database: 'testdb',
-    port: 3306,
+    host: '52.78.105.126',
+    user: '2team',
+    password: '1234',
+    database: 'projectdb',
+    port: 31212,
   });
 
   db.connect((err) => {

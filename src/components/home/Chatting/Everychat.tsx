@@ -105,14 +105,35 @@ const Container = styled.div`
 const ChatLogContainer = styled.div`
   max-height: 250px;
   overflow-y: auto;
-  padding: 10px; 
+  padding: 10px;
 `;
 
 const ChatLog = styled.div`
   max-height: 200px;
   overflow-y: auto;
-  padding: 10px; 
+  padding: 10px;
+
+  scrollbar-width: thin;
+  scrollbar-color: #0074E4 #f5f5f5; 
+
+  &::-webkit-scrollbar {
+    width: 8px; 
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f5f5f5;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: #0074E4;
+    border-radius: 10px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: #0056b3;
+  }
 `;
+
 
 const InputContainer = styled.div`
   display: flex;

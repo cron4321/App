@@ -4,6 +4,7 @@ import AddIcon from "@mui/icons-material/Add";
 import { Link } from "react-router-dom";
 import Axios from "axios";
 import EveryChat from "./Chatting/Everychat";
+import ChatIcon from "@mui/icons-material/Chat";
 
 const axios = Axios.create({
   baseURL: "http://localhost:5000",
@@ -14,11 +15,16 @@ interface Memo {
   content: string;
 }
 
+interface ModalProps {
+  show: boolean;
+}
+
 function Footer() {
   const [memos, setMemos] = useState<Memo[]>([]);
-  const [memosToShow, setMemosToShow] = useState(2); 
+  const [memosToShow, setMemosToShow] = useState(2);
   const [showMemoModal, setShowMemoModal] = useState(false); 
-  const [selectedMemo, setSelectedMemo] = useState<Memo | null>(null); 
+  const [showChatModal, setShowChatModal] = useState(false); 
+  const [selectedMemo, setSelectedMemo] = useState<Memo | null>(null);
 
   useEffect(() => {
     axios
@@ -33,34 +39,19 @@ function Footer() {
 
   useEffect(() => {
     function handleResize() {
-      const numMemosToShow = Math.floor(window.innerWidth / 130); 
+      const numMemosToShow = Math.floor(window.innerWidth / 130);
       setMemosToShow(numMemosToShow);
     }
     window.addEventListener("resize", handleResize);
-    handleResize(); 
+    handleResize();
 
     return () => {
       window.removeEventListener("resize", handleResize);
     };
   }, []);
 
-  const openMemoModal = (memo: Memo) => {
-    setSelectedMemo(memo);
-    setShowMemoModal(true);
-  };
-  
-  const closeMemoModal = () => {
-    setSelectedMemo(null);
-    setShowMemoModal(false);
-  };
-  
-
   const createFooterContent = (index: number, memo: Memo) => (
-    <FooterContent
-      key={index}
-      memoBoxWidth={130}
-      onClick={() => openMemoModal(memo)} 
-    >
+    <FooterContent key={index} memoBoxWidth={130} onClick={() => openMemoModal(memo)}>
       <MemoTitle>{truncateText(memo.title, 2)}</MemoTitle>
       <MemoContent>{truncateText(memo.content, 8)}</MemoContent>
     </FooterContent>
@@ -73,6 +64,23 @@ function Footer() {
     }
     return text;
   }
+  const openChatModal = () => {
+    setShowChatModal(true); 
+  };
+
+  const closeChatModal = () => {
+    setShowChatModal(false);
+  };
+
+  const openMemoModal = (memo: Memo) => {
+    setSelectedMemo(memo);
+    setShowMemoModal(true);
+  };
+
+  const closeMemoModal = () => {
+    setSelectedMemo(null);
+    setShowMemoModal(false);
+  };
 
   return (
     <FooterContainer>
@@ -84,6 +92,9 @@ function Footer() {
               <AddIcon sx={{ width: 30, height: 30 }} />
             </AddButton>
           </Link>
+          <ChatButton onClick={openChatModal}>
+            <ChatIcon sx={{ fontSize: 24, color: '#ffffff' }} />
+          </ChatButton>
         </FooterHeader>
         <FooterBody memosToShow={memosToShow}>
           {memos.map((memo, index) =>
@@ -91,9 +102,12 @@ function Footer() {
           )}
         </FooterBody>
       </FooterForm>
-      <ChatContainer>
-        <EveryChat />
-      </ChatContainer>
+      <ChatModal show={showChatModal}>
+        <ChatContainer>
+          <EveryChat />
+        </ChatContainer>
+        <CloseButton onClick={closeChatModal}>닫기</CloseButton>
+      </ChatModal>
       <MemoModal show={showMemoModal}>
         {selectedMemo && (
           <Div>
@@ -111,6 +125,52 @@ const Div = styled.div``;
 const H2 = styled.h2``;
 const P = styled.p``;
 
+const ChatButton = styled.button`
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #0074e4;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+`;
+
+const ChatModal = styled.div<ModalProps>`
+  display: ${props => (props.show ? "flex" : "none")};
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  background-color: rgba(255, 255, 255, 0.9);
+  z-index: 1000;
+  border-radius: 12px;
+  box-shadow: 0px 0px 5px 0px #000;
+  max-width: 100%;
+  width: 100%;
+  overflow-y: auto;
+  flex-direction: column; 
+`;
+
+const CloseButton = styled.button`
+  background-color: #0074e4;
+  border: none;
+  border-radius: 0;
+  width: 100%;
+  height: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  color: #fff;
+  position: absolute;
+  top: 0; 
+  left: 0; 
+`;
+
 const Button = styled.button`
   border-radius: 12px;
   background-color: #0074e4;
@@ -118,13 +178,14 @@ const Button = styled.button`
   width: 63px;
   height: 35px;
 `;
+
 const MemoTitle = styled.div`
   font-size: 18px;
   font-weight: bold;
   color: #333;
   margin: 10px;
-  overflow: hidden; 
-  text-overflow: ellipsis; 
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
 `;
 
@@ -132,13 +193,13 @@ const MemoContent = styled.div`
   font-size: 16px;
   color: #555;
   margin: 10px;
-  overflow: hidden; 
-  text-overflow: ellipsis; 
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: pre-wrap;
-  max-height: 4.8em; 
+  max-height: 4.8em;
 `;
 
-const MemoModal = styled.div<{ show: boolean }>`
+const MemoModal = styled.div<ModalProps>`
   display: ${props => (props.show ? "flex" : "none")};
   position: fixed;
   top: 0;
@@ -169,7 +230,6 @@ const MemoModal = styled.div<{ show: boolean }>`
   }
 `;
 
-
 const FooterContainer = styled.div`
   display: flex;
   flex-direction: column;
@@ -190,7 +250,7 @@ const FooterForm = styled.div`
 const FooterHeader = styled.div`
   display: flex;
   justify-content: space-between;
-  align-items: center; 
+  align-items: center;
 `;
 
 const FooterTitle = styled.div`

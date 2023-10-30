@@ -90,34 +90,28 @@ const Sidebar = forwardRef<HTMLDivElement, SidebarProps>(
             </SchoolItem>
           ))}
         </SchoolList>
-        <br />
         <Link to={"https://www.kyonggi.ac.kr/www/index.do"}>
           <IconContainer>
-            <HomeIcon sx={{ width: 48, height: 48 }} />
             <IconText>홈페이지</IconText>
           </IconContainer>
         </Link>
         <Link to={"https://www.kyonggi.ac.kr/www/selectBbsNttList.do?key=7520&bbsNo=1073"}>
           <IconContainer>
-            <CampaignIcon sx={{ width: 48, height: 48 }} />
             <IconText>공지사항</IconText>
           </IconContainer>
         </Link>
         <Link to={"https://www.kyonggi.ac.kr/www/selectTnSchafsSchdulListUS.do?key=5695&sc1=10"}>
           <IconContainer>
-            <SchoolIcon sx={{ width: 48, height: 48 }} />
             <IconText>학사공지</IconText>
           </IconContainer>
         </Link>
         <Link to={"https://www.kyonggi.ac.kr/www/selectTnRstrntMenuListU.do?key=7138&sc1=30&"}>
           <IconContainer>
-            <LocalDiningIcon sx={{ width: 48, height: 48 }} />
             <IconText>식당메뉴</IconText>
           </IconContainer>
         </Link>
         <Link to={"https://www.kyonggi.ac.kr/www/contents.do?key=5749"}>
           <IconContainer>
-            <DirectionsBusIcon sx={{ width: 48, height: 48 }} />
             <IconText>셔틀버스</IconText>
           </IconContainer>
         </Link>
@@ -161,12 +155,9 @@ const IconText = styled.p`
   color: #fff;
   text-align: center;
   font-family: "Inter", sans-serif;
-  font-size: 14px;
   font-style: normal;
   font-weight: 500;
-  line-height: 20px;
-  letter-spacing: -2px;
-  margin: 0;
+  margin-top: 10px;
 `;
 
 const SchoolList = styled.div`

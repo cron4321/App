@@ -14,7 +14,6 @@ const connection = mysql.createConnection({
   password: '1234',
   database: 'projectdb',
   port: 31212,
-  charset: "utf8mb4",
 });
 
 connection.connect((err) => {
