@@ -1,10 +1,16 @@
 const express = require('express');
-const nodemailer = require('nodemailer');
-const bodyParser = require('body-parser');
+const http = require('http');
+const socketIo = require('socket.io');
 const cors = require('cors');
 const mysql = require('mysql2');
-const app = express();
+const nodemailer = require('nodemailer');
+const bodyParser = require('body-parser');
 const session = require('express-session');
+const jwt = require('jsonwebtoken');
+
+const app = express();
+const server = http.createServer(app);
+const io = socketIo(server);
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -22,7 +28,6 @@ const generateRandomVerificationCode = () => {
 };
 
 const verificationCodes = new Map();
-
 let db;
 
 function connectToDatabase() {
@@ -66,6 +71,14 @@ function connectToDatabase() {
 }
 
 connectToDatabase();
+
+const secretKey = 'secretkey';
+
+app.use(session({
+  secret: 'secretkey',
+  resave: false,
+  saveUninitialized: true,
+}));
 
 app.post('/send-verification-email', (req, res) => {
   const { email } = req.body;
@@ -126,11 +139,11 @@ app.post('/signup', async (req, res) => {
 
   db.beginTransaction((err) => {
     if (err) {
-      console.error("Transaction error:", err);
-      return res.status(500).json({ error: "Transaction error" });
+      console.error('Transaction error:', err);
+      return res.status(500).json({ error: 'Transaction error' });
     }
 
-    db.query("INSERT INTO users (email, password, username) VALUES (?, ?, ?)", [email, password, username], (err, results) => {
+    db.query('INSERT INTO users (email, password, username) VALUES (?, ?, ?)', [email, password, username], (err, results) => {
       if (err) {
         console.error('Database error during signup:', err);
         db.rollback();
@@ -139,26 +152,16 @@ app.post('/signup', async (req, res) => {
 
       db.commit((commitErr) => {
         if (commitErr) {
-          console.error("Commit error:", commitErr);
-          return res.status(500).json({ error: "Commit error" });
+          console.error('Commit error:', commitErr);
+          return res.status(500).json({ error: 'Commit error' });
         }
 
-        console.log("Data Added");
-        res.status(200).json({ message: "회원가입이 완료되었습니다." });
+        console.log('Data Added');
+        res.status(200).json({ message: '회원가입이 완료되었습니다.' });
       });
     });
   });
 });
-
-const jwt = require("jsonwebtoken")
-
-const secretKey = "secretkey";
-
-app.use(session({
-  secret: 'secretkey',
-  resave: false,
-  saveUninitialized: true,
-}));
 
 app.post('/login', (req, res) => {
   const { email, password } = req.body;
@@ -193,24 +196,24 @@ app.post('/login', (req, res) => {
   });
 });
 
-app.get("/current-user", (req, res) => {
-  const token = req.header("Authorization");
+app.get('/current-user', (req, res) => {
+  const token = req.header('Authorization');
 
   if (!token) {
-    return res.status(401).json({ error: "사용자 인증이 필요합니다." });
+    return res.status(401).json({ error: '사용자 인증이 필요합니다.' });
   }
 
   jwt.verify(token, secretKey, (err, user) => {
     if (err) {
-      return res.status(401).json({ error: "토큰이 유효하지 않습니다." });
+      return res.status(401).json({ error: '토큰이 유효하지 않습니다.' });
     }
 
     const { email, username } = user;
 
-    db.query("SELECT id FROM nowloginid WHERE email = ?", [email], (err, results) => {
+    db.query('SELECT id FROM nowloginid WHERE email = ?', [email], (err, results) => {
       if (err) {
-        console.error("데이터베이스 오류:", err);
-        return res.status(500).json({ error: "데이터베이스 오류" });
+        console.error('데이터베이스 오류:', err);
+        return res.status(500).json({ error: '데이터베이스 오류' });
       }
       if (results.length > 0) {
         const row = results[0];
@@ -221,7 +224,7 @@ app.get("/current-user", (req, res) => {
         };
         res.json(currentUser);
       } else {
-        res.status(404).json({ error: "사용자 정보를 찾을 수 없습니다." });
+        res.status(404).json({ error: '사용자 정보를 찾을 수 없습니다.' });
       }
     });
   });
@@ -272,7 +275,149 @@ app.get('/user', (req, res) => {
   }
 });
 
-const port = process.env.PORT || 3002;
-app.listen(port, () => {
-  console.log(`서버가 ${port} 포트에서 실행 중입니다.`);
+const connection = mysql.createConnection({
+  host: '52.78.105.126',
+  user: '2team',
+  password: '1234',
+  database: 'projectdb',
+  port: 31212,
 });
+
+connection.connect((err) => {
+  if (err) {
+    console.error('Error connecting to MySQL:', err.message);
+  } else {
+    console.log('Connected to MySQL database');
+  }
+});
+
+connection.query(
+  'CREATE TABLE IF NOT EXISTS messages (id INT AUTO_INCREMENT PRIMARY KEY, username VARCHAR(255), message TEXT)',
+  (err) => {
+    if (err) {
+      console.error('Error creating table:', err.message);
+    } else {
+      console.log('Table created');
+    }
+  }
+);
+
+let clientCount = 0;
+
+app.get('/getClientName', (req, res) => {
+  clientCount++;
+  const clientName = `익명${clientCount}`;
+  res.json({ clientName });
+});
+
+app.get('/getInitialMessages', (req, res) => {
+  connection.query('SELECT * FROM messages', (err, results) => {
+    if (!err) {
+      const messages = results.map((row) => `${row.username}: ${row.message}`);
+      res.json({ messages });
+    } else {
+      res.status(500).json({ error: '초기 채팅 내용을 가져오는 중 오류가 발생했습니다.' });
+    }
+  });
+});
+
+io.on('connection', (socket) => {
+  const clientName = `익명${clientCount}`;
+
+  console.log(`Client connected: ${clientName}`);
+
+  socket.emit('clientName', clientName);
+
+  socket.on('message', (data) => {
+    const { username, message } = data;
+
+    connection.query('INSERT INTO messages (username, message) VALUES (?, ?)', [username, message], (err, results) => {
+      if (err) {
+        console.error('Error inserting into MySQL:', err.message);
+      } else {
+        console.log(`Message saved: ${message}`);
+        console.log(`username saved: ${username}`);
+      }
+    });
+
+    io.emit('message', `${username}: ${message}`);
+  });
+
+  socket.on('disconnect', () => {
+    console.log(`Client disconnected: ${clientName}`);
+  });
+});
+
+app.get('/api/memos', (req, res) => {
+  const sql = 'SELECT * FROM memos';
+  connection.query(sql, (err, results) => {
+    if (err) {
+      console.error('메모 데이터 가져오기 오류:', err);
+      res.status(500).json({ error: '데이터 가져오기 오류' });
+    } else {
+      res.json(results);
+    }
+  });
+});
+
+app.post('/api/memos', (req, res) => {
+  const { title, content } = req.body;
+  const sql = 'INSERT INTO memos (title, content) VALUES (?, ?)';
+  connection.query(sql, [title, content], (err, result) => {
+    if (err) {
+      console.error('메모 데이터 추가 오류:', err);
+      res.status(500).json({ error: '데이터 추가 오류' });
+    } else {
+      console.log('메모가 추가되었습니다.');
+      res.json({ message: '메모가 추가되었습니다.', insertId: result.insertId });
+    }
+  });
+});
+
+app.put('/api/memos/:id', (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  if (isNaN(id)) {
+    return res.status(400).json({ error: '올바르지 않은 ID' });
+  }
+
+  const { title, content } = req.body;
+  if (!title || !content) {
+    return res.status(400).json({ error: '제목과 내용은 필수입니다.' });
+  }
+
+  const sql = 'UPDATE memos SET title = ?, content = ? WHERE id = ?';
+  connection.query(sql, [title, content, id], (err, result) => {
+    if (err) {
+      console.error('메모 데이터 수정 오류:', err);
+      res.status(500).json({ error: '데이터 수정 오류' });
+    } else {
+      console.log('메모가 수정되었습니다.');
+      res.json({ message: '메모가 수정되었습니다.' });
+    }
+  });
+});
+
+app.delete("/api/memos/:id", (req, res) => {
+    const id = parseInt(req.params.id, 10);
+    if (isNaN(id)) {
+      return res.status(400).json({ error: "올바르지 않은 ID" });
+    }
+  
+    const sql = "DELETE FROM memos WHERE id = ?";
+    connection.query(sql, [id], (err, result) => {
+      if (err) {
+        console.error("메모 데이터 삭제 오류:", err);
+        res.status(500).json({ error: "데이터 삭제 오류" });
+      } else {
+        console.log("메모가 삭제되었습니다.");
+        res.json({ message: "메모가 삭제되었습니다." });
+      }
+    });
+  });
+  
+const port = process.env.PORT || 3002;
+server.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
+});
+  
+  
