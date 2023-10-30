@@ -19,39 +19,39 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, "public")));
 
-// const connection = mysql.createConnection({
-//   host: "127.0.0.1",
-//   user: "testuser1",
-//   password: "1234",
-//   database: "test_db",
-//   port: 3306,
-// });
+const connection = mysql.createConnection({
+  host: "127.0.0.1",
+  user: "testuser1",
+  password: "1234",
+  database: "test_db",
+  port: 3306,
+});
 
-// connection.connect((err) => {
-//   if (err) {
-//     console.error("Error connecting to MySQL:", err.message);
-//   } else {
-//     console.log("Connected to MySQL database");
-//   }
-// });
+connection.connect((err) => {
+  if (err) {
+    console.error("Error connecting to MySQL:", err.message);
+  } else {
+    console.log("Connected to MySQL database");
+  }
+});
 
-// connection.query(
-//   `
-// CREATE TABLE IF NOT EXISTS results (
-//   id INT AUTO_INCREMENT PRIMARY KEY,
-//   title VARCHAR(255),
-//   link VARCHAR(255),
-//   date VARCHAR(255)
-// )
-// `,
-//   (err, results) => {
-//     if (err) {
-//       console.error("Error creating table:", err);
-//     } else {
-//       console.log("Table created or already exists");
-//     }
-//   }
-// );
+connection.query(
+  `
+CREATE TABLE IF NOT EXISTS results (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  title VARCHAR(255),
+  link VARCHAR(255),
+  date VARCHAR(255)
+)
+`,
+  (err, results) => {
+    if (err) {
+      console.error("Error creating table:", err);
+    } else {
+      console.log("Table created or already exists");
+    }
+  }
+);
 
 const results = [];
 let previousTitles = [];
@@ -86,28 +86,28 @@ async function crawlPages() {
               .attr("href")}`,
             date: cleanText($(element).find("td.col-date").text()),
           };
-          results(elementData);
+          results.unshift(elementData);
         }
       });
     }
     // 새 푸시 알림 전송
     PushNotifications();
 
-    // results.forEach((element) => {
-    //   const { title, link, date } = element;
-    //   const query = `
-    //     INSERT INTO results (title, link, date)
-    //     SELECT ?, ?, ?
-    //     WHERE NOT EXISTS (SELECT link FROM results WHERE link = ?)
-    //   `;
-    //   connection.query(query, [title, link, date, link], (err, results) => {
-    //     if (err) {
-    //       console.error("Error inserting data:", err);
-    //     } else {
-    //       console.log("Data inserted successfully");
-    //     }
-    //   });
-    // });
+    results.forEach((element) => {
+      const { title, link, date } = element;
+      const query = `
+        INSERT INTO results (title, link, date)
+        SELECT ?, ?, ?
+        WHERE NOT EXISTS (SELECT link FROM results WHERE link = ?)
+      `;
+      connection.query(query, [title, link, date, link], (err, results) => {
+        if (err) {
+          console.error("Error inserting data:", err);
+        } else {
+          console.log("Data inserted successfully");
+        }
+      });
+    });
 
     // 데이터 출력
     app.get("/data", (req, res) => {
