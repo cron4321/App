@@ -49,7 +49,7 @@ async function crawlPages() {
               .attr("href")}`,
             date: cleanText($(element).find("td.col-date").text()),
           };
-          results.unshift(elementData);
+          results.push(elementData);
         }
       });
     }
