@@ -1,30 +1,66 @@
-import React, { useEffect, forwardRef, Ref, RefObject, useState, useRef } from "react";
+import React, { useEffect, forwardRef, useState, useRef } from "react";
 import styled from "styled-components";
-import HomeIcon from "@mui/icons-material/Home";
-import CampaignIcon from "@mui/icons-material/Campaign";
-import SchoolIcon from "@mui/icons-material/School";
-import LocalDiningIcon from "@mui/icons-material/LocalDining";
-import DirectionsBusIcon from "@mui/icons-material/DirectionsBus";
 import { Link } from "react-router-dom";
+import axios from "axios";
 
 type SidebarProps = {
   isSidebarOpen: boolean;
   userNickname: string;
   userEmail: string;
   onLogout: () => void;
+  selectedSchool: string;
   setSelectedSchool: (school: string) => void;
 };
 
 const Sidebar = forwardRef<HTMLDivElement, SidebarProps>(
-  ({ isSidebarOpen, userNickname, userEmail, onLogout, setSelectedSchool }: SidebarProps, ref) => {
+  ({ isSidebarOpen, userNickname, userEmail, onLogout, selectedSchool, setSelectedSchool }: SidebarProps, ref) => {
     const [isSchoolModalOpen, setSchoolModalOpen] = useState(false);
-    const [schools] = useState(["서울대학교", "연세대학교", "고려대학교", "무슨대학교", "저대학교", "완전대학교", "이런대학교"]);
+    const [schools] = useState([
+      "서울대학교",
+      "연세대학교",
+      "고려대학교",
+      "무슨대학교",
+      "저대학교",
+      "완전대학교",
+      "이런대학교",
+    ]);
     const [isSidebarVisible, setIsSidebarVisible] = useState(isSidebarOpen);
     const sidebarRef = useRef<HTMLDivElement | null>(null);
 
+    useEffect(() => {
+      const userToken = localStorage.getItem('userToken');
+      if (userToken) {
+        axios.defaults.headers.common['Authorization'] = `Bearer ${userToken}`;
+      }
+
+      axios
+        .get("http://localhost:3002/selected-school")
+        .then((response) => {
+          setSelectedSchool(response.data.selectedSchool);
+        })
+        .catch((error) => {
+          if (error.response && error.response.status === 401) {
+            console.error("401 Unauthorized 에러가 발생했습니다.");
+          } else {
+            console.error("학교 정보 불러오기 오류:", error);
+          }
+        });
+    }, [setSelectedSchool]); 
+
     const handleSchoolSelect = (school: string) => {
-      setSelectedSchool(school);
-      setSchoolModalOpen(false);
+      axios
+        .post("http://localhost:3002/select-school", { schoolName: school })
+        .then(() => {
+          console.log('학교 정보 업데이트 완료.');
+          setSelectedSchool(school); 
+        })
+        .catch((error) => {
+          if (error.response && error.response.status === 401) {
+            console.error("401 Unauthorized 에러가 발생했습니다.");
+          } else {
+            console.error("학교 정보 업데이트 오류:", error);
+          }
+        });
     };
 
     const handleOutsideClick = (e: MouseEvent) => {
@@ -85,7 +121,11 @@ const Sidebar = forwardRef<HTMLDivElement, SidebarProps>(
         <SidebarItem onClick={() => setSchoolModalOpen(!isSchoolModalOpen)}>학교 변경</SidebarItem>
         <SchoolList className={isSchoolModalOpen ? "open" : ""}>
           {schools.map((school) => (
-            <SchoolItem key={school} onClick={() => handleSchoolSelect(school)}>
+            <SchoolItem
+              key={school}
+              onClick={() => handleSchoolSelect(school)}
+              className={school === selectedSchool ? "selected" : ""}
+            >
               {school}
             </SchoolItem>
           ))}
@@ -119,7 +159,6 @@ const Sidebar = forwardRef<HTMLDivElement, SidebarProps>(
     );
   }
 );
-
 
 const SidebarContainer = styled.div<{ isSidebarVisible: boolean; isSidebarOpen: boolean }>`
   width: 250px;
@@ -164,11 +203,11 @@ const SchoolList = styled.div`
   display: flex;
   flex-direction: column;
   gap: 8px;
-  max-height: 100px; 
-  overflow-y: auto; 
-  padding-right: 10px; 
+  max-height: 100px;
+  overflow-y: auto;
+  padding-right: 10px;
 
-  max-height: ${(props) => (props.className === 'open' ? '100px' : '0')};
+  max-height: ${(props) => (props.className === "open" ? "100px" : "0")};
 
   transition: max-height 0.3s ease-in-out;
 
@@ -177,17 +216,20 @@ const SchoolList = styled.div`
   }
 
   &::-webkit-scrollbar-thumb {
-    background: #888; 
+    background: #888;
     border-radius: 4px;
   }
 
   &::-webkit-scrollbar-thumb:hover {
-    background: #555; 
+    background: #555;
   }
 `;
 
 const SchoolItem = styled.div`
   cursor: pointer;
+  &.selected {
+    color: #ffcc00; // Change the color for the selected school
+  }
 `;
 
 export default Sidebar;

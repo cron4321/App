@@ -32,11 +32,11 @@ let db;
 
 function connectToDatabase() {
   db = mysql.createConnection({
-    host: '52.78.105.126',
-    user: '2team',
-    password: '1234',
-    database: 'projectdb',
-    port: 31212,
+    host: '127.0.0.1',
+    user: 'test',
+    password: '0000',
+    database: 'testdb',
+    port: 3306,
   });
 
   db.connect((err) => {
@@ -72,10 +72,10 @@ function connectToDatabase() {
 
 connectToDatabase();
 
-const secretKey = 'secretkey';
+const secretKey = 'qwer';
 
 app.use(session({
-  secret: 'secretkey',
+  secret: 'qwer',
   resave: false,
   saveUninitialized: true,
 }));
@@ -155,13 +155,14 @@ app.post('/signup', async (req, res) => {
           console.error('Commit error:', commitErr);
           return res.status(500).json({ error: 'Commit error' });
         }
-
+        
         console.log('Data Added');
         res.status(200).json({ message: '회원가입이 완료되었습니다.' });
       });
     });
   });
 });
+
 
 app.post('/login', (req, res) => {
   const { email, password } = req.body;
@@ -194,6 +195,31 @@ app.post('/login', (req, res) => {
       res.status(400).json({ error: '이메일 또는 비밀번호가 잘못되었습니다.' });
     }
   });
+});
+
+app.get('/user', (req, res) => {
+  const user = req.session.user;
+
+  if (user) {
+    res.status(200).json({
+      email: user.email,
+      username: user.username,
+    });
+  } else {
+    db.query('SELECT email, username FROM nowloginid', (err, results) => {
+      if (err) {
+        console.error('Database error:', err);
+        return res.status(500).json({ error: 'Database error' });
+      }
+
+      if (results.length > 0) {
+        const row = results[0];
+        res.status(200).json(row);
+      } else {
+        res.status(404).json({ error: '사용자 정보를 찾을 수 없습니다.' });
+      }
+    });
+  }
 });
 
 app.get('/current-user', (req, res) => {
@@ -231,12 +257,23 @@ app.get('/current-user', (req, res) => {
 });
 
 function requireLogin(req, res, next) {
-  if (req.session.user) {
-    return next();
-  } else {
-    return res.status(401).json({ error: '로그인이 필요합니다.' });
+  const token = req.header('Authorization');
+
+  if (!token) {
+    return res.status(401).json({ error: '사용자 인증이 필요합니다.' });
   }
+
+  jwt.verify(token.replace('Bearer ', ''), secretKey, (err, user) => {
+    if (err) {
+      return res.status(401).json({ error: '토큰이 유효하지 않습니다.' });
+    }
+
+    req.user = user;
+    next();
+  });
 }
+
+
 
 app.get('/protected-route', requireLogin, (req, res) => {
   res.status(200).json({ message: '로그인한 사용자만 접근 가능한 라우트' });
@@ -250,37 +287,12 @@ app.post('/logout', (req, res) => {
   db.query('DELETE FROM nowloginsuc');
 });
 
-app.get('/user', (req, res) => {
-  const user = req.session.user;
-
-  if (user) {
-    res.status(200).json({
-      email: user.email,
-      username: user.username,
-    });
-  } else {
-    db.query('SELECT email, username FROM nowloginid', (err, results) => {
-      if (err) {
-        console.error('Database error:', err);
-        return res.status(500).json({ error: 'Database error' });
-      }
-
-      if (results.length > 0) {
-        const row = results[0];
-        res.status(200).json(row);
-      } else {
-        res.status(404).json({ error: '사용자 정보를 찾을 수 없습니다.' });
-      }
-    });
-  }
-});
-
 const connection = mysql.createConnection({
-  host: '52.78.105.126',
-  user: '2team',
-  password: '1234',
-  database: 'projectdb',
-  port: 31212,
+  host: '127.0.0.1',
+  user: 'test',
+  password: '0000',
+  database: 'testdb',
+  port: 3306,
 });
 
 connection.connect((err) => {
@@ -348,9 +360,19 @@ io.on('connection', (socket) => {
   });
 });
 
-app.get('/api/memos', (req, res) => {
-  const sql = 'SELECT * FROM memos';
-  connection.query(sql, (err, results) => {
+db.query(`
+  CREATE TABLE IF NOT EXISTS memos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT, 
+    title VARCHAR(255),
+    content TEXT
+  )
+`);
+
+app.get('/api/memos', requireLogin, (req, res) => {
+  const user = req.user;
+  const sql = 'SELECT * FROM memos WHERE user_id = ?';
+  connection.query(sql, [user.id], (err, results) => {
     if (err) {
       console.error('메모 데이터 가져오기 오류:', err);
       res.status(500).json({ error: '데이터 가져오기 오류' });
@@ -360,13 +382,19 @@ app.get('/api/memos', (req, res) => {
   });
 });
 
-app.post('/api/memos', (req, res) => {
+app.post('/api/memos', requireLogin, (req, res) => {
+  const user = req.user;
   const { title, content } = req.body;
-  const sql = 'INSERT INTO memos (title, content) VALUES (?, ?)';
-  connection.query(sql, [title, content], (err, result) => {
+
+  if (!title || !content) {
+    return res.status(400).json({ error: '제목과 내용은 필수입니다.' });
+  }
+
+  const sql = 'INSERT INTO memos (user_id, title, content) VALUES (?, ?, ?)';
+  connection.query(sql, [user.id, title, content], (err, result) => {
     if (err) {
       console.error('메모 데이터 추가 오류:', err);
-      res.status(500).json({ error: '데이터 추가 오류' });
+      return res.status(500).json({ error: '데이터 추가 오류' });
     } else {
       console.log('메모가 추가되었습니다.');
       res.json({ message: '메모가 추가되었습니다.', insertId: result.insertId });
@@ -374,8 +402,9 @@ app.post('/api/memos', (req, res) => {
   });
 });
 
-app.put('/api/memos/:id', (req, res) => {
-  const id = parseInt(req.params.id, 10);
+app.put('/api/memos/:id', requireLogin, (req, res) => {
+  const user = req.user;
+  const id = parseInt(user.id, 10);
   if (isNaN(id)) {
     return res.status(400).json({ error: '올바르지 않은 ID' });
   }
@@ -385,8 +414,8 @@ app.put('/api/memos/:id', (req, res) => {
     return res.status(400).json({ error: '제목과 내용은 필수입니다.' });
   }
 
-  const sql = 'UPDATE memos SET title = ?, content = ? WHERE id = ?';
-  connection.query(sql, [title, content, id], (err, result) => {
+  const sql = 'UPDATE memos SET title = ?, content = ? WHERE id = ? AND user_id = ?';
+  connection.query(sql, [title, content, id, user.id], (err, result) => {
     if (err) {
       console.error('메모 데이터 수정 오류:', err);
       res.status(500).json({ error: '데이터 수정 오류' });
@@ -397,24 +426,77 @@ app.put('/api/memos/:id', (req, res) => {
   });
 });
 
-app.delete("/api/memos/:id", (req, res) => {
-    const id = parseInt(req.params.id, 10);
-    if (isNaN(id)) {
-      return res.status(400).json({ error: "올바르지 않은 ID" });
+app.delete('/api/memos/:id', requireLogin, (req, res) => {
+  const user = req.user;
+  const id = parseInt(req.params.id, 10);
+  if (isNaN(id)) {
+    return res.status(400).json({ error: '올바르지 않은 ID' });
+  }
+
+  const sql = 'DELETE FROM memos WHERE id = ? AND user_id = ?';
+  connection.query(sql, [id, user.id], (err, result) => {
+    if (err) {
+      console.error('메모 데이터 삭제 오류:', err);
+      res.status(500).json({ error: '데이터 삭제 오류' });
+    } else {
+      console.log('메모가 삭제되었습니다.');
+      res.json({ message: '메모가 삭제되었습니다.' });
     }
+  });
+});
+
+app.use((err, req, res, next) => {
+  console.error('서버 오류:', err);
+  res.status(500).json({ error: '서버 오류' });
+});
   
-    const sql = "DELETE FROM memos WHERE id = ?";
-    connection.query(sql, [id], (err, result) => {
+db.query(`
+  CREATE TABLE IF NOT EXISTS schools (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT UNIQUE,
+    school_name VARCHAR(255)
+  );
+`);
+
+app.post('/select-school', requireLogin, (req, res) => {
+  const user = req.user;
+  const { schoolName } = req.body;
+  const insertOrUpdateSchool = (user, schoolName) => {
+    const sql = 'INSERT INTO schools (user_id, school_name) VALUES (?, ?) ON DUPLICATE KEY UPDATE school_name = ?';
+    connection.query(sql, [user.id, schoolName, schoolName], (err, result) => {
       if (err) {
-        console.error("메모 데이터 삭제 오류:", err);
-        res.status(500).json({ error: "데이터 삭제 오류" });
+        console.error('학교 선택 오류:', err);
+        res.status(500).json({ error: '학교 선택 오류' });
       } else {
-        console.log("메모가 삭제되었습니다.");
-        res.json({ message: "메모가 삭제되었습니다." });
+        console.log('학교가 선택되었습니다.');
+        res.json({ message: '학교가 선택되었습니다.' });
       }
     });
+  };
+
+  insertOrUpdateSchool(user, schoolName);
+});
+
+app.get('/selected-school', requireLogin, (req, res) => {
+  const user = req.user;
+  const sql = 'SELECT school_name FROM schools WHERE user_id = ?';
+  connection.query(sql, [user.id], (err, results) => {
+    if (err) {
+      console.error('학교 정보 불러오기 오류:', err);
+      res.status(500).json({ error: '학교 정보 불러오기 오류' });
+    } else {
+      if (results.length > 0) {
+        const selectedSchool = results[0].school_name;
+        res.json({ selectedSchool });
+      } else {
+        res.json({ selectedSchool: null });
+      }
+    }
   });
-  
+});
+
+
+
 const port = process.env.PORT || 3002;
 server.listen(port, () => {
   console.log(`Server is running on port ${port}`);

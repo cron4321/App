@@ -11,8 +11,7 @@ function Header() {
   const [userEmail, setUserEmail] = useState("");
   const [userNickname, setUserNickname] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [selectedSchool, setSelectedSchool] = useState("");
-
+  const [selectedSchool, setSelectedSchool] = useState(""); 
   const sidebarRef = useRef<HTMLDivElement | null>(null);
 
   const exit = () => {
@@ -20,6 +19,7 @@ function Header() {
   };
 
   const handleLogout = async () => {
+    localStorage.removeItem('userToken');
     try {
       await axios.post("http://localhost:3002/logout");
       setUserEmail("");
@@ -71,9 +71,10 @@ function Header() {
         console.error('사용자 정보 불러오기 오류:', error);
       }
     };
-
+  
     fetchUserData();
   }, []);
+  
 
   return (
     <HeaderContainer>
@@ -82,13 +83,7 @@ function Header() {
       </MenuButton>
       <Link to="/" style={{ textDecoration: "none", color: "#fff" }}>
         <HeaderText>
-          {selectedSchool ? (
-            <>
-              {selectedSchool} 알리미
-            </>
-          ) : (
-            "우리 학교 알리미"
-          )}
+          {selectedSchool ? `${selectedSchool} 알리미` : "우리 학교 알리미"}
         </HeaderText>
       </Link>
       <Alarm isSidebarOpen={isSidebarOpen} onLogout={handleLogout} />
@@ -98,7 +93,8 @@ function Header() {
         userNickname={userNickname}
         userEmail={userEmail}
         onLogout={handleLogout}
-        setSelectedSchool={setSelectedSchool} 
+        setSelectedSchool={setSelectedSchool}
+        selectedSchool={selectedSchool} 
       />
     </HeaderContainer>
   );
@@ -127,12 +123,7 @@ const MenuButton = styled.div`
 const HeaderText = styled.h1`
   color: #fff;
   text-decoration: none;
-`;
-
-const SchoolName = styled.span`
-  color: #ddd;
-  font-size: 12px;
-  margin-left: 8px;
+  text-align: center;
 `;
 
 export default Header;

@@ -15,15 +15,15 @@ function LoginPage() {
     if (email && password) {
       try {
         const response = await axios.post('http://localhost:3002/login', { email, password });
-
+  
         if (response.status === 200) {
           const token = response.data.token;
-
+  
           if (token) {
             localStorage.setItem('userToken', token);
-
+  
             console.log('로그인 성공.');
-            navigate('/'); 
+            navigate('/');
           } else {
             alert('이메일 또는 비밀번호가 잘못되었습니다.');
           }
@@ -38,16 +38,12 @@ function LoginPage() {
       alert('이메일과 비밀번호를 입력해주세요.');
     }
   }
-
-  const HomeLink = styled(Link)`
-  text-decoration: none;
-  color: inherit;
-`;
+  
 
   return (
     <Container>
       <Header>
-        <HomeLink to='/'>우리 학교 알리미</HomeLink>
+        <Link to='/'>우리 학교 알리미</Link>
         <Br />로그인
       </Header>
       <LoginForm
@@ -57,7 +53,7 @@ function LoginPage() {
         setPassword={(value) => setPassword(value)}
         handleLogin={handleLogin}
       />
-      <SignupPage>아직 계정이 없으신가요? <Link to="/Signup">회원가입</Link></SignupPage>
+      <SignupPage>아직 계정이 없으신가요? <HomeLink to="/Signup">회원가입</HomeLink></SignupPage>
 
       {loggedInUser && loggedInUser.username ? (
         <Div>
@@ -71,5 +67,9 @@ function LoginPage() {
 const Br = styled.br``;
 const Div = styled.div``;
 const P = styled.p``;
+const HomeLink = styled(Link)`
+    text-decoration: none;
+    color: inherit;
+  `;
 
 export default LoginPage;
