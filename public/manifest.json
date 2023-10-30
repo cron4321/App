@@ -1,0 +1,19 @@
+{
+  "name": "우리 학교 알리미",
+  "short_name": "우리학교알리미",
+  "description": "My Progressive Web App",
+  "scope": ".",
+  "start_url": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "icons": [
+    {
+      "src": "PWAiconimg/icons/maskable_icon_x512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ]
+}
