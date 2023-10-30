@@ -20,6 +20,8 @@ function Header() {
 
   const handleLogout = async () => {
     localStorage.removeItem('userToken');
+    localStorage.removeItem('userEmail');
+    localStorage.removeItem('username');
     try {
       await axios.post("http://localhost:3002/logout");
       setUserEmail("");
@@ -55,27 +57,19 @@ function Header() {
   }, [isSidebarOpen]);
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const response = await axios.get('http://localhost:3002/user');
-        const userData = response.data;
-        if (userData.email && userData.username) {
-          setIsLoggedIn(true);
-          setUserEmail(userData.email);
-          setUserNickname(userData.username);
-          setSelectedSchool(userData.selectedSchool || "");
-        } else {
-          setIsLoggedIn(false);
-        }
-      } catch (error) {
-        console.error('사용자 정보 불러오기 오류:', error);
-      }
-    };
+    const storedEmail = localStorage.getItem('userEmail');
+    const storedUsername = localStorage.getItem('username');
   
-    fetchUserData();
+    if (storedEmail && storedUsername) {
+      setIsLoggedIn(true);
+      setUserEmail(storedEmail);
+      setUserNickname(storedUsername);
+      setSelectedSchool(localStorage.getItem('selectedSchool') || "");
+    } else {
+      setIsLoggedIn(false);
+    }
   }, []);
   
-
   return (
     <HeaderContainer>
       <MenuButton onClick={exit}>

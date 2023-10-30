@@ -18,9 +18,12 @@ function LoginPage() {
   
         if (response.status === 200) {
           const token = response.data.token;
+          const username = response.data.username;
   
           if (token) {
             localStorage.setItem('userToken', token);
+            localStorage.setItem('userEmail', email);
+            localStorage.setItem('username', username);
   
             console.log('로그인 성공.');
             navigate('/');
@@ -39,11 +42,10 @@ function LoginPage() {
     }
   }
   
-
   return (
     <Container>
       <Header>
-        <Link to='/'>우리 학교 알리미</Link>
+        <HomeLink to='/'>우리 학교 알리미</HomeLink>
         <Br />로그인
       </Header>
       <LoginForm
@@ -53,7 +55,7 @@ function LoginPage() {
         setPassword={(value) => setPassword(value)}
         handleLogin={handleLogin}
       />
-      <SignupPage>아직 계정이 없으신가요? <HomeLink to="/Signup">회원가입</HomeLink></SignupPage>
+      <SignupPage>아직 계정이 없으신가요? <Link to="/Signup">회원가입</Link></SignupPage>
 
       {loggedInUser && loggedInUser.username ? (
         <Div>

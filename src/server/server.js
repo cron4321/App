@@ -53,19 +53,6 @@ function connectToDatabase() {
           username VARCHAR(255)
         )
       `);
-
-      db.query(`
-        CREATE TABLE IF NOT EXISTS nowloginid (
-          email VARCHAR(255),
-          username VARCHAR(255)
-        )
-      `);
-
-      db.query(`
-        CREATE TABLE IF NOT EXISTS nowloginsuc (
-          status BOOLEAN
-        )
-      `);
     }
   });
 }
@@ -163,7 +150,6 @@ app.post('/signup', async (req, res) => {
   });
 });
 
-
 app.post('/login', (req, res) => {
   const { email, password } = req.body;
   db.query('SELECT * FROM users WHERE email = ? AND password = ?', [email, password], (err, results) => {
@@ -184,18 +170,14 @@ app.post('/login', (req, res) => {
 
       const token = jwt.sign(user, secretKey, { expiresIn: '1h' });
 
-      res.status(200).json({ token });
-
-      db.query('DELETE FROM nowloginid');
-      db.query('INSERT INTO nowloginid (email, username) VALUES (?, ?)', [email, row.username]);
-      db.query('DELETE FROM nowloginsuc');
-      db.query('INSERT INTO nowloginsuc (status) VALUES (true)');
+      res.status(200).json({ token, email, username: row.username });
     } else {
       console.error('로그인 실패: 이메일 또는 비밀번호가 잘못됨');
       res.status(400).json({ error: '이메일 또는 비밀번호가 잘못되었습니다.' });
     }
   });
 });
+
 
 app.get('/user', (req, res) => {
   const user = req.session.user;
@@ -206,19 +188,7 @@ app.get('/user', (req, res) => {
       username: user.username,
     });
   } else {
-    db.query('SELECT email, username FROM nowloginid', (err, results) => {
-      if (err) {
-        console.error('Database error:', err);
-        return res.status(500).json({ error: 'Database error' });
-      }
-
-      if (results.length > 0) {
-        const row = results[0];
-        res.status(200).json(row);
-      } else {
-        res.status(404).json({ error: '사용자 정보를 찾을 수 없습니다.' });
-      }
-    });
+    res.status(404).json({ error: '사용자 정보를 찾을 수 없습니다.' });
   }
 });
 
@@ -233,26 +203,6 @@ app.get('/current-user', (req, res) => {
     if (err) {
       return res.status(401).json({ error: '토큰이 유효하지 않습니다.' });
     }
-
-    const { email, username } = user;
-
-    db.query('SELECT id FROM nowloginid WHERE email = ?', [email], (err, results) => {
-      if (err) {
-        console.error('데이터베이스 오류:', err);
-        return res.status(500).json({ error: '데이터베이스 오류' });
-      }
-      if (results.length > 0) {
-        const row = results[0];
-        const currentUser = {
-          email,
-          username,
-          id: row.id,
-        };
-        res.json(currentUser);
-      } else {
-        res.status(404).json({ error: '사용자 정보를 찾을 수 없습니다.' });
-      }
-    });
   });
 });
 
@@ -272,19 +222,9 @@ function requireLogin(req, res, next) {
     next();
   });
 }
-
-
-
-app.get('/protected-route', requireLogin, (req, res) => {
-  res.status(200).json({ message: '로그인한 사용자만 접근 가능한 라우트' });
-});
-
 app.post('/logout', (req, res) => {
   req.session.user = null;
   res.status(200).json({ message: '로그아웃되었습니다.' });
-
-  db.query('DELETE FROM nowloginid');
-  db.query('DELETE FROM nowloginsuc');
 });
 
 const connection = mysql.createConnection({
