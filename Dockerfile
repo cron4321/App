@@ -10,3 +10,5 @@ RUN npm install
 RUN npm run build
 
 CMD [ "npm", "start" ]
+CMD [ "node", "src/server/server.js" ]
+CMD [ "node", "src/server/crawlserver.js" ]
