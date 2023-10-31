@@ -15,7 +15,7 @@ navigator.serviceWorker.ready
     if (subscription) {
       return subscription;
     }
-    const response = await fetch("http://localhost:4000/vapidPublicKey");
+    const response = await fetch("http://15.164.241.36:4000/vapidPublicKey");
     const vapidPublicKey = await response.text();
     const convertedVapidKey = urlBase64ToUint8Array(vapidPublicKey);
     return await registration.pushManager.subscribe({
@@ -25,7 +25,7 @@ navigator.serviceWorker.ready
   })
   .then(function (subscription) {
     // Send the subscription details to the server using the Fetch API.
-    fetch("http://localhost:4000/register", {
+    fetch("http://15.164.241.36:4000/register", {
       method: "post",
       headers: {
         "Content-type": "application/json",
@@ -46,7 +46,7 @@ navigator.serviceWorker.ready
       });
 
     document.getElementById("doIt").onclick = function () {
-      fetch("http://localhost:4000/sendNotification", {
+      fetch("http://15.164.241.36:4000/sendNotification", {
         method: "post",
         headers: {
           "Content-type": "application/json",
