@@ -11,7 +11,7 @@ function Main({ mynumber }: { mynumber: number }) {
 
   useEffect(() => {
     axios
-      .get("http://localhost:4000/data/")
+      .get("http://15.164.241.36:4000/data/")
       .then((response) => {
         setData(response.data);
       })
