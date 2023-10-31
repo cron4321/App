@@ -80,7 +80,6 @@ function Header() {
           {selectedSchool ? `${selectedSchool} 알리미` : "우리 학교 알리미"}
         </HeaderText>
       </Link>
-      <Alarm isSidebarOpen={isSidebarOpen} onLogout={handleLogout} />
       <Sidebar
         isSidebarOpen={isSidebarOpen}
         ref={sidebarRef}
@@ -101,7 +100,17 @@ const HeaderContainer = styled.header`
   background: #0074e4;
   align-items: center;
   justify-content: space-between;
+  & > a {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center; 
+  }
+  & > a > h1 {
+    margin-right: 100px; 
+  }
 `;
+
+
 
 const MenuButton = styled.div`
   width: 30px;
@@ -117,7 +126,7 @@ const MenuButton = styled.div`
 const HeaderText = styled.h1`
   color: #fff;
   text-decoration: none;
-  text-align: center;
+  text-align: center; 
 `;
 
 export default Header;

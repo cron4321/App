@@ -32,11 +32,11 @@ let db;
 
 function connectToDatabase() {
   db = mysql.createConnection({
-    host: '127.0.0.1',
-    user: 'test',
-    password: '0000',
-    database: 'testdb',
-    port: 3306,
+    host: '52.78.105.126',
+    user: '2team',
+    password: '1234',
+    database: 'projectdb',
+    port: 31212,
   });
 
   db.connect((err) => {
@@ -51,7 +51,7 @@ function connectToDatabase() {
           email VARCHAR(255),
           password VARCHAR(255),
           username VARCHAR(255)
-        )
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
       `);
     }
   });
@@ -228,11 +228,11 @@ app.post('/logout', (req, res) => {
 });
 
 const connection = mysql.createConnection({
-  host: '127.0.0.1',
-  user: 'test',
-  password: '0000',
-  database: 'testdb',
-  port: 3306,
+  host: '52.78.105.126',
+  user: '2team',
+  password: '1234',
+  database: 'projectdb',
+  port: 31212,
 });
 
 connection.connect((err) => {
@@ -244,7 +244,7 @@ connection.connect((err) => {
 });
 
 connection.query(
-  'CREATE TABLE IF NOT EXISTS messages (id INT AUTO_INCREMENT PRIMARY KEY, username VARCHAR(255), message TEXT)',
+  'CREATE TABLE IF NOT EXISTS messages (id INT AUTO_INCREMENT PRIMARY KEY, username VARCHAR(255), message TEXT) ENGINE=InnoDB DEFAULT CHARSET=utf8;',
   (err) => {
     if (err) {
       console.error('Error creating table:', err.message);
@@ -306,7 +306,7 @@ db.query(`
     user_id INT, 
     title VARCHAR(255),
     content TEXT
-  )
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 `);
 
 app.get('/api/memos', requireLogin, (req, res) => {
@@ -395,7 +395,7 @@ db.query(`
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT UNIQUE,
     school_name VARCHAR(255)
-  );
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 `);
 
 app.post('/select-school', requireLogin, (req, res) => {
