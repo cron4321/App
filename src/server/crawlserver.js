@@ -64,7 +64,7 @@ async function crawlPages() {
 }
 
 app.listen(port, () => {
-  console.log(`웹 서버가 http://localhost:${port} 에서 실행 중입니다.`);
+  console.log(`웹 서버가 http://15.164.241.36:${port} 에서 실행 중입니다.`);
 });
 
 function cleanText(text) {
