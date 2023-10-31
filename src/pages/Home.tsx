@@ -32,7 +32,7 @@ function App() {
   useEffect(() => {
     // Express 웹 서버로부터 데이터 가져오기
     axios
-      .get("http://15.164.241.36:4000/data") // Express 웹 서버 주소
+      .get("http://3.37.37.81:4000/data") // Express 웹 서버 주소
       .then((response) => {
         setData(response.data);
       })
