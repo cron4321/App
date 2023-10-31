@@ -20,6 +20,7 @@
     "axios": "^1.5.1",
     "cheerio": "^1.0.0-rc.12",
     "colors": "^1.4.0",
+    "concurrently": "^8.2.2",
     "config": "^3.3.9",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
@@ -62,7 +63,10 @@
     "workbox-streams": "^6.6.0"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "concurrently \"npm run server\" \"npm run crawlserver\" \"npm run client\"",
+    "crawlserver": "node src/server/crawlserver.js",
+    "server": "node src/server/server.js",
+    "client": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
