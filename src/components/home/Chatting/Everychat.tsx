@@ -2,14 +2,14 @@ import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import io from 'socket.io-client';
 
-const socket = io('http://localhost:3002', {
+const socket = io('http://15.164.241.36:3002', {
   transports: ['websocket'],
   path: '/socket.io',
   secure: true,
   rejectUnauthorized: false,
   withCredentials: true,
   extraHeaders: {
-    'Access-Control-Allow-Origin': 'http://localhost:3000',
+    'Access-Control-Allow-Origin': 'http://15.164.241.36:3000',
   },
 });
 
@@ -20,7 +20,7 @@ const ChatClient: React.FC = () => {
   const chatLogRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    fetch('http://localhost:3002/getClientName')
+    fetch('http://15.164.241.36:3002/getClientName')
       .then((response) => response.json())
       .then((data) => {
         setClientName(data.clientName);
@@ -29,7 +29,7 @@ const ChatClient: React.FC = () => {
         console.error('익명 번호 가져오기 오류:', error);
       });
 
-    fetch('http://localhost:3002/getInitialMessages')
+    fetch('http://15.164.241.36:3002/getInitialMessages')
       .then((response) => response.json())
       .then((data) => {
         setChatLog(data.messages);
