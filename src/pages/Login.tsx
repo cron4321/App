@@ -14,7 +14,7 @@ function LoginPage() {
   const handleLogin = async () => {
     if (email && password) {
       try {
-        const response = await axios.post('http://localhost:3002/login', { email, password });
+        const response = await axios.post('http://15.164.241.36:3002/login', { email, password });
   
         if (response.status === 200) {
           const token = response.data.token;
