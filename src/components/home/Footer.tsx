@@ -7,7 +7,7 @@ import EveryChat from "./Chatting/Everychat";
 import ChatIcon from "@mui/icons-material/Chat";
 
 const axios = Axios.create({
-  baseURL: "http://43.202.181.150:3002",
+  baseURL: "http://172.31.39.85:3002",
 });
 
 interface Memo {
