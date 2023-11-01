@@ -11,7 +11,7 @@ function Main({ mynumber }: { mynumber: number }) {
 
   useEffect(() => {
     axios
-      .get("http://3.37.37.81:4000/data/")
+      .get("http://43.202.181.150:4000/data/")
       .then((response) => {
         setData(response.data);
       })
