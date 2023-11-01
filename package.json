@@ -63,10 +63,7 @@
     "workbox-streams": "^6.6.0"
   },
   "scripts": {
-    "start": "concurrently \"npm run server\" \"npm run crawlserver\" \"npm run client\"",
-    "crawlserver": "node src/server/crawlserver.js",
-    "server": "node src/server/server.js",
-    "client": "react-scripts start",
+    "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
