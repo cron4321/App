@@ -1,5 +1,5 @@
 #!/bin/sh
 
-npm start &
+npm client &
 node src/server/server.js &
 node src/server/crawlserver.js
