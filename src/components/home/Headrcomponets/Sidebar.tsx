@@ -19,10 +19,10 @@ const Sidebar = forwardRef<HTMLDivElement, SidebarProps>(
       "서울대학교",
       "연세대학교",
       "고려대학교",
-      "무슨대학교",
-      "저대학교",
-      "완전대학교",
-      "이런대학교",
+      "oo대학교",
+      "xx대학교",
+      "aa대학교",
+      "qq대학교",
     ]);
     const [isSidebarVisible, setIsSidebarVisible] = useState(isSidebarOpen);
     const sidebarRef = useRef<HTMLDivElement | null>(null);
