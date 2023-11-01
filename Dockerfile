@@ -9,4 +9,4 @@ RUN npm install
 
 RUN npm run build
 
-CMD ["node","./src/server/server.js"]
+CMD ["node","app/src/server/server.js"]
