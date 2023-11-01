@@ -1,12 +1,20 @@
+require("dotenv").config();
 const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
 const cors = require('cors');
 const mysql = require('mysql2');
 const nodemailer = require('nodemailer');
-const bodyParser = require('body-parser');
 const session = require('express-session');
 const jwt = require('jsonwebtoken');
+const webpush = require("web-push");
+const bodyParser = require("body-parser");
+const cheerio = require("cheerio");
+const path = require("path");
+const cron = require("node-cron");
+const data = require("./UniList.json");
+const Host = data.Uni1.Host;
+const axios = require("axios");
 
 const app = express();
 const server = http.createServer(app);
@@ -14,6 +22,7 @@ const io = socketIo(server);
 
 app.use(cors());
 app.use(bodyParser.json());
+app.use(express.static(path.join(__dirname, "public")));
 
 const transporter = nodemailer.createTransport({
   service: 'Gmail',
@@ -32,11 +41,11 @@ let db;
 
 function connectToDatabase() {
   db = mysql.createConnection({
-    host: '10.105.126.107',
+    host: '52.78.105.126',
     user: '2team',
     password: '1234',
     database: 'projectdb',
-    port: 3306,
+    port: 31212,
   });
 
   db.connect((err) => {
@@ -129,8 +138,8 @@ app.post('/signup', async (req, res) => {
       console.error('Transaction error:', err);
       return res.status(500).json({ error: 'Transaction error' });
     }
-
-    db.query('INSERT INTO users (email, password, username) VALUES (?, ?, ?)', [email, password, username], (err, results) => {
+    db.query('INSERT INTO users (email, password, username) VALUES (?, ?, ?)', 
+                              [email, password, username], (err, results) => {
       if (err) {
         console.error('Database error during signup:', err);
         db.rollback();
@@ -222,17 +231,18 @@ function requireLogin(req, res, next) {
     next();
   });
 }
+
 app.post('/logout', (req, res) => {
   req.session.user = null;
   res.status(200).json({ message: '로그아웃되었습니다.' });
 });
 
 const connection = mysql.createConnection({
-  host: '10.105.126.107',
+  host: '52.78.105.126',
   user: '2team',
   password: '1234',
   database: 'projectdb',
-  port: 3306,
+  port: 31212,
 });
 
 connection.connect((err) => {
@@ -321,7 +331,6 @@ app.get('/api/memos', requireLogin, (req, res) => {
     }
   });
 });
-
 app.post('/api/memos', requireLogin, (req, res) => {
   const user = req.user;
   const { title, content } = req.body;
@@ -341,6 +350,7 @@ app.post('/api/memos', requireLogin, (req, res) => {
     }
   });
 });
+
 
 app.put('/api/memos/:id', requireLogin, (req, res) => {
   const user = req.user;
@@ -435,6 +445,50 @@ app.get('/selected-school', requireLogin, (req, res) => {
   });
 });
 
+const results = [];
+let previousTitles = [];
+
+async function crawlPages() {
+  const baseUrl = "https://www.snu.ac.kr/snunow/notice/genernal";
+  const maxResults = 15; 
+
+  try {
+    for (let currentPage = 1; results.length < maxResults; currentPage++) {
+      const url = `${baseUrl}?page=${currentPage}`;
+      const response = await axios.get(url);
+      const html = response.data;
+      const $ = cheerio.load(html);
+
+      const elements = $("table tbody tr");
+
+      if (elements.length === 0) {
+        break;
+      }
+
+      elements.each((index, element) => {
+        if (results.length < maxResults) {
+          const elementData = {
+            title: cleanText(
+              $(element).find("td.col-title a span span").text()
+            ),
+            link: `https://${Host}${$(element)
+              .find("td.col-title a")
+              .attr("href")}`,
+            date: cleanText($(element).find("td.col-date").text()),
+          };
+          results.unshift(elementData);
+        }
+      });
+    }
+    PushNotifications();
+
+    app.get("/data", (req, res) => {
+      res.json(results);
+    });
+  } catch (error) {
+    console.error("크롤링 중 오류 발생:", error);
+  }
+}
 
 
 const port = process.env.PORT || 3002;
@@ -442,4 +496,78 @@ server.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
   
-  
+function cleanText(text) {
+  return text.replace(/\n/g, "").replace(/\s+/g, " ").trim();
+}
+
+function PushNotifications() {
+  const changedTitles = getChangedTitles(
+    previousTitles,
+    results.map((item) => item.title)
+  );
+
+  if (changedTitles.length > 0) {
+    sendPushNotifications(changedTitles);
+  }
+
+  previousTitles = results.map((item) => item.title);
+}
+
+function getChangedTitles(previousTitles, newTitles) {
+  const changedTitles = [];
+
+  for (const newTitle of newTitles) {
+    if (!previousTitles.includes(newTitle)) {
+      changedTitles.push(newTitle);
+    }
+  }
+
+  return changedTitles;
+}
+
+crawlPages();
+
+cron.schedule("*/10 * * * *", () => {
+  crawlPages();
+  console.log("crawling");
+});
+
+if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
+  console.log(
+    "You must set the VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY " +
+      "environment variables. You can use the following ones:"
+  );
+  console.log(webpush.generateVAPIDKeys());
+  return;
+}
+
+webpush.setVapidDetails(
+  "mailto:your@email.com",
+  process.env.VAPID_PUBLIC_KEY,
+  process.env.VAPID_PRIVATE_KEY
+);
+
+app.get("/vapidPublicKey", function (req, res) {
+  res.send(process.env.VAPID_PUBLIC_KEY);
+});
+
+app.post("/register", function (req, res) {
+  res.sendStatus(201);
+});
+
+function sendPushNotifications() {
+  console.log("success");
+  app.post("/sendNotification", function (req, res) {
+    const subscription = req.body.subscription;
+    const payload = results[0].title;
+    webpush
+      .sendNotification(subscription, payload)
+      .then(function () {
+        res.sendStatus(201);
+      })
+      .catch(function (error) {
+        console.log(error);
+        res.sendStatus(500);
+      });
+  });
+}
