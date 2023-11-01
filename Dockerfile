@@ -1,7 +1,7 @@
 FROM node:14
 
-WORKDIR /App
-COPY . /App
+WORKDIR /app
+COPY . /app
 
 EXPOSE 3000
 
