@@ -9,4 +9,4 @@ RUN npm install
 
 RUN npm run build
 
-CMD ["sh", "-c", "node src/server/server.js & npm start"]
+CMD ["sh", "-c", "node src/server/server.js & node src/server/crawlserver.js & npm start"]
