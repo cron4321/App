@@ -7,6 +7,8 @@ EXPOSE 3000
 
 RUN npm install
 
+RUN npm install express
+
 RUN npm run build
 
 COPY start.sh /start.sh
