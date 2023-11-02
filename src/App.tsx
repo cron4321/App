@@ -2,7 +2,7 @@ import HomePage from "./pages/Home";
 import LoginPage from "./pages/Login";
 import Signup from "./pages/Signup";
 import BoardPage from "./pages/Board";
-import MemoPage from "./pages/Memo";
+import MemoPage from "./pages/memo";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import React from "react";
 
