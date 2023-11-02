@@ -23,7 +23,7 @@ function Header() {
     localStorage.removeItem('userEmail');
     localStorage.removeItem('username');
     try {
-      await axios.post("http://localhost:3002/logout");
+      await axios.post("http://3.37.37.81:3002/logout");
       setUserEmail("");
       setUserNickname("");
       setIsLoggedIn(false);
