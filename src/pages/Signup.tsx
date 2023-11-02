@@ -72,7 +72,7 @@ function Signup() {
   const sendVerificationCode = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:3002/send-verification-email",
+        "http://3.37.37.81:3002/send-verification-email",
         { email: user.email }
       );
       if (response.status === 200) {
@@ -86,7 +86,7 @@ function Signup() {
   const checkDuplicate = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:3002/check-duplicate",
+        "http://3.37.37.81:3002/check-duplicate",
         {
           email: user.email,
           username: user.username,
@@ -125,7 +125,7 @@ function Signup() {
       user.password
     ) {
       try {
-        const response = await axios.post("http://localhost:3002/signup", user);
+        const response = await axios.post("http://3.37.37.81:3002/signup", user);
 
         if (response.status === 200) {
           setIsSignUpSuccessful(true);
