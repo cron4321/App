@@ -1,5 +1,5 @@
-import React from 'react';
-import { Input, Label, ErrorMessage } from '../../styles/Signupstyled';
+import React from "react";
+import { Input, Label, ErrorMessage } from "./Signupstyled";
 
 type UserFormProps = {
   user: {
@@ -14,7 +14,13 @@ type UserFormProps = {
   isPasswordsMatching: boolean;
 };
 
-const UserForm: React.FC<UserFormProps> = ({ user, handleInputChange, isEmailValid, isPasswordValid, isPasswordsMatching }) => {
+const UserForm: React.FC<UserFormProps> = ({
+  user,
+  handleInputChange,
+  isEmailValid,
+  isPasswordValid,
+  isPasswordsMatching,
+}) => {
   return (
     <div>
       <div>
@@ -53,7 +59,9 @@ const UserForm: React.FC<UserFormProps> = ({ user, handleInputChange, isEmailVal
           onChange={handleInputChange}
         />
         {!isPasswordsMatching && (
-          <ErrorMessage>비밀번호와 비밀번호 확인이 일치하지 않습니다.</ErrorMessage>
+          <ErrorMessage>
+            비밀번호와 비밀번호 확인이 일치하지 않습니다.
+          </ErrorMessage>
         )}
       </div>
       <div>
@@ -68,6 +76,6 @@ const UserForm: React.FC<UserFormProps> = ({ user, handleInputChange, isEmailVal
       </div>
     </div>
   );
-}
+};
 
 export default UserForm;

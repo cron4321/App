@@ -1,14 +1,21 @@
-import React from 'react';
-import { Label, Input, ErrorMessage } from '../../styles/Signupstyled';
+import React from "react";
+import { Label, Input, ErrorMessage } from "./Signupstyled";
 
 type VerificationCodeFormProps = {
   verificationRequested: boolean;
   verificationCode: string;
-  handleVerificationCodeChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleVerificationCodeChange: (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => void;
   isVerificationCodeValid: boolean;
 };
 
-const VerificationCodeForm: React.FC<VerificationCodeFormProps> = ({ verificationRequested, verificationCode, handleVerificationCodeChange, isVerificationCodeValid }) => {
+const VerificationCodeForm: React.FC<VerificationCodeFormProps> = ({
+  verificationRequested,
+  verificationCode,
+  handleVerificationCodeChange,
+  isVerificationCodeValid,
+}) => {
   return (
     <div>
       <Label htmlFor="verificationCode">인증 코드</Label>
@@ -24,6 +31,6 @@ const VerificationCodeForm: React.FC<VerificationCodeFormProps> = ({ verificatio
       )}
     </div>
   );
-}
+};
 
 export default VerificationCodeForm;

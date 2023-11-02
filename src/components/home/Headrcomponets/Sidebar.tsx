@@ -1,11 +1,7 @@
-import React, { useEffect, forwardRef, Ref, RefObject, useState, useRef } from "react";
+import React, { useEffect, forwardRef, useState, useRef } from "react";
 import styled from "styled-components";
-import HomeIcon from "@mui/icons-material/Home";
-import CampaignIcon from "@mui/icons-material/Campaign";
-import SchoolIcon from "@mui/icons-material/School";
-import LocalDiningIcon from "@mui/icons-material/LocalDining";
-import DirectionsBusIcon from "@mui/icons-material/DirectionsBus";
 import { Link } from "react-router-dom";
+import axios from "axios";
 
 type SidebarProps = {
   isSidebarOpen: boolean;

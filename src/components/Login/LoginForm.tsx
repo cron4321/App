@@ -1,4 +1,4 @@
-import { Label, Input, Button } from '../../styles/Loginstyled';
+import { Label, Input, Button } from "./Loginstyled";
 import React from "react";
 
 interface LoginFormProps {
@@ -9,7 +9,13 @@ interface LoginFormProps {
   handleLogin: () => void;
 }
 
-function LoginForm({ email, password, setEmail, setPassword, handleLogin }: LoginFormProps) {
+function LoginForm({
+  email,
+  password,
+  setEmail,
+  setPassword,
+  handleLogin,
+}: LoginFormProps) {
   return (
     <div>
       <div>

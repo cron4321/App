@@ -5,6 +5,7 @@ import axios from "axios";
 import { Link } from "react-router-dom";
 import { MainBoard } from "../../types";
 import React from "react";
+import { response } from "express";
 
 function Main({ mynumber }: { mynumber: number }) {
   const [data, setData] = useState<MainBoard[]>([]);
@@ -19,7 +20,7 @@ function Main({ mynumber }: { mynumber: number }) {
         console.error("데이터를 불러오는 중 에러 발생:", error);
       });
   }, []);
-  
+
   return (
     <MainContainer>
       <MainContent>

@@ -1,30 +1,30 @@
-const button = document.getElementById("notifications");
-
-button?.addEventListener("click", function (e) {
+if (Notification.permission !== "granted") {
   Notification.requestPermission().then(function (result) {
     if (result === "granted") {
-      randomNotification();
+      console.log("알림권한 수락됨");
     }
   });
-});
+}
 
-navigator.serviceWorker.register("service-worker.js");
+navigator.serviceWorker.register("/service-worker.js");
 navigator.serviceWorker.ready
-  .then(async function (registration) {
-    const subscription = await registration.pushManager.getSubscription();
-    if (subscription) {
-      return subscription;
-    }
-    const response = await fetch("http://localhost:4000/vapidPublicKey");
-    const vapidPublicKey = await response.text();
-    const convertedVapidKey = urlBase64ToUint8Array(vapidPublicKey);
-    return await registration.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: convertedVapidKey,
-    });
+  .then(function (registration) {
+    return registration.pushManager
+      .getSubscription()
+      .then(async function (subscription) {
+        if (subscription) {
+          return subscription;
+        }
+        const response = await fetch("http://localhost:4000/vapidPublicKey");
+        const vapidPublicKey = await response.text();
+        const convertedVapidKey = urlBase64ToUint8Array(vapidPublicKey);
+        return registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: convertedVapidKey,
+        });
+      });
   })
   .then(function (subscription) {
-    // Send the subscription details to the server using the Fetch API.
     fetch("http://localhost:4000/register", {
       method: "post",
       headers: {
