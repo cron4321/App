@@ -24,7 +24,8 @@ function LoginPage() {
 
         if (response.status === 200) {
           const token = response.data.token;
-
+          const username = response.data.username;
+  
           if (token) {
             localStorage.setItem("userToken", token);
 
@@ -83,5 +84,9 @@ function LoginPage() {
 const Br = styled.br``;
 const Div = styled.div``;
 const P = styled.p``;
+const HomeLink = styled(Link)`
+    text-decoration: none;
+    color: inherit;
+  `;
 
 export default LoginPage;

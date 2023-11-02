@@ -21,20 +21,30 @@ interface ModalProps {
 
 function Footer() {
   const [memos, setMemos] = useState<Memo[]>([]);
+  const [error, setError] = useState<null | Error>(null);
   const [memosToShow, setMemosToShow] = useState(2);
   const [showMemoModal, setShowMemoModal] = useState(false); 
   const [showChatModal, setShowChatModal] = useState(false); 
   const [selectedMemo, setSelectedMemo] = useState<Memo | null>(null);
 
   useEffect(() => {
-    axios
-      .get("/api/memos")
-      .then((response) => {
+    async function fetchMemos() {
+      try {
+        const token = localStorage.getItem('userToken');
+  
+        const response = await axios.get('/api/memos', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+  
         setMemos(response.data);
-      })
-      .catch((error) => {
-        console.error("메모 데이터 불러오기 오류:", error);
-      });
+      } catch (error) {
+        setError(error as Error);
+      }
+    }
+  
+    fetchMemos();
   }, []);
 
   useEffect(() => {

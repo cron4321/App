@@ -11,8 +11,7 @@ function Header() {
   const [userEmail, setUserEmail] = useState("");
   const [userNickname, setUserNickname] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [selectedSchool, setSelectedSchool] = useState("");
-
+  const [selectedSchool, setSelectedSchool] = useState(""); 
   const sidebarRef = useRef<HTMLDivElement | null>(null);
 
   const exit = () => {
@@ -20,6 +19,9 @@ function Header() {
   };
 
   const handleLogout = async () => {
+    localStorage.removeItem('userToken');
+    localStorage.removeItem('userEmail');
+    localStorage.removeItem('username');
     try {
       await axios.post("http://localhost:3002/logout");
       setUserEmail("");
@@ -55,26 +57,19 @@ function Header() {
   }, [isSidebarOpen]);
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const response = await axios.get('http://localhost:3002/user');
-        const userData = response.data;
-        if (userData.email && userData.username) {
-          setIsLoggedIn(true);
-          setUserEmail(userData.email);
-          setUserNickname(userData.username);
-          setSelectedSchool(userData.selectedSchool || "");
-        } else {
-          setIsLoggedIn(false);
-        }
-      } catch (error) {
-        console.error('사용자 정보 불러오기 오류:', error);
-      }
-    };
-
-    fetchUserData();
+    const storedEmail = localStorage.getItem('userEmail');
+    const storedUsername = localStorage.getItem('username');
+  
+    if (storedEmail && storedUsername) {
+      setIsLoggedIn(true);
+      setUserEmail(storedEmail);
+      setUserNickname(storedUsername);
+      setSelectedSchool(localStorage.getItem('selectedSchool') || "");
+    } else {
+      setIsLoggedIn(false);
+    }
   }, []);
-
+  
   return (
     <HeaderContainer>
       <MenuButton onClick={exit}>
@@ -82,23 +77,17 @@ function Header() {
       </MenuButton>
       <Link to="/" style={{ textDecoration: "none", color: "#fff" }}>
         <HeaderText>
-          {selectedSchool ? (
-            <>
-              {selectedSchool} 알리미
-            </>
-          ) : (
-            "우리 학교 알리미"
-          )}
+          {selectedSchool ? `${selectedSchool} 알리미` : "우리 학교 알리미"}
         </HeaderText>
       </Link>
-      <Alarm isSidebarOpen={isSidebarOpen} onLogout={handleLogout} />
       <Sidebar
         isSidebarOpen={isSidebarOpen}
         ref={sidebarRef}
         userNickname={userNickname}
         userEmail={userEmail}
         onLogout={handleLogout}
-        setSelectedSchool={setSelectedSchool} 
+        setSelectedSchool={setSelectedSchool}
+        selectedSchool={selectedSchool} 
       />
     </HeaderContainer>
   );
@@ -111,7 +100,17 @@ const HeaderContainer = styled.header`
   background: #0074e4;
   align-items: center;
   justify-content: space-between;
+  & > a {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center; 
+  }
+  & > a > h1 {
+    margin-right: 100px; 
+  }
 `;
+
+
 
 const MenuButton = styled.div`
   width: 30px;
@@ -127,12 +126,7 @@ const MenuButton = styled.div`
 const HeaderText = styled.h1`
   color: #fff;
   text-decoration: none;
-`;
-
-const SchoolName = styled.span`
-  color: #ddd;
-  font-size: 12px;
-  margin-left: 8px;
+  text-align: center; 
 `;
 
 export default Header;
