@@ -9,7 +9,7 @@ services:
       - "3000:3000"
 
   backend:
-    container_name: backend-container
+    image: penguingong/project
     build:
       context: ./
       dockerfile: Dockerfile-backend
@@ -17,7 +17,7 @@ services:
       - "3002:3002"
 
   backend2:
-    container_name: backend-container2
+    image: penguingong/project
     build:
       context: ./
       dockerfile: Dockerfile-backend2
