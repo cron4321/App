@@ -92,7 +92,9 @@ async function crawlingserver() {
     }
     console.log("새 공지사항:", newPush);
 
-    PushNotifications(newPush);
+    if (newPush.length > 0) {
+      PushNotifications(newPush);
+    } else console.log("새 공지사항이 없습니다.");
 
     app.get("/data", (req, res) => {
       res.json(results);
@@ -138,7 +140,7 @@ app.get("/vapidPublicKey", function (req, res) {
 app.post("/register", function (req, res) {
   const subscription = req.body.subscription;
   const subscriptionString = JSON.stringify(subscription);
-  
+
   // connection.query(
   //   "INSERT INTO subscriptions (user_id, subscription_data) VALUES (?, ?) ON DUPLICATE KEY UPDATE subscription_data = VALUES(subscription_data)",
   //   [userId, subscriptionString]
