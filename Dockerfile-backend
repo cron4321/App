@@ -6,6 +6,8 @@ COPY . .
 
 WORKDIR ./
 RUN npm install --save --legacy-peer-deps
+RUN npm install @mui/material @mui/icons-material
+
 RUN npm run build
 
 EXPOSE 3002
