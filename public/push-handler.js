@@ -15,7 +15,7 @@ navigator.serviceWorker.ready
         if (subscription) {
           return subscription;
         }
-        const response = await fetch("http://localhost:4000/vapidPublicKey");
+        const response = await fetch("http://43.202.181.150:30800/vapidPublicKey");
         const vapidPublicKey = await response.text();
         const convertedVapidKey = urlBase64ToUint8Array(vapidPublicKey);
         return registration.pushManager.subscribe({
@@ -25,7 +25,7 @@ navigator.serviceWorker.ready
       });
   })
   .then(function (subscription) {
-    fetch("http://localhost:4000/register", {
+    fetch("http://43.202.181.150:30800/register", {
       method: "post",
       headers: {
         "Content-type": "application/json",
