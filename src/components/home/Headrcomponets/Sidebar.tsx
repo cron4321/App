@@ -44,7 +44,7 @@ const Sidebar = forwardRef<HTMLDivElement, SidebarProps>(
       }
 
       axios
-        .get("http://localhost:3002/selected-school")
+        .get("http://43.202.181.150:30700/selected-school")
         .then((response) => {
           setSelectedSchool(response.data.selectedSchool);
         })
@@ -59,7 +59,7 @@ const Sidebar = forwardRef<HTMLDivElement, SidebarProps>(
 
     const handleSchoolSelect = (school: string) => {
       axios
-        .post("http://localhost:3002/select-school", { schoolName: school })
+        .post("http://43.202.181.150:30700/select-school", { schoolName: school })
         .then(() => {
           console.log("학교 정보 업데이트 완료.");
           setSelectedSchool(school);
