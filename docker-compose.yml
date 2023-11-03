@@ -9,7 +9,7 @@ services:
       - "3000:3000"
 
   backend:
-    image: project-backend
+    image: project-back
     build:
       context: ./
       dockerfile: Dockerfile-backend
@@ -17,7 +17,7 @@ services:
       - "3002:3002"
 
   backend2:
-    image: project-backend2
+    image: project-back2
     build:
       context: ./
       dockerfile: Dockerfile-backend2
