@@ -1,14 +1,26 @@
-FROM node:14
-
+FROM node:14 AS build
 WORKDIR /app
-
-COPY . .
-
-WORKDIR ./
+COPY package*.json ./
 RUN npm install --save --legacy-peer-deps
+COPY . .
+RUN npm cache clean --force
 RUN npm run build
 
+FROM node:14
+WORKDIR /app
 EXPOSE 3002
 
-WORKDIR /app/src/server
-CMD ["node", "server.js"]
+RUN npm install express --save --legacy-peer-deps
+RUN npm install socket.io --save --legacy-peer-deps
+RUN npm install cors --save --legacy-peer-deps
+RUN npm install mysql2 --save --legacy-peer-deps
+RUN npm install nodemailer --save --legacy-peer-deps
+RUN npm install body-parser --save --legacy-peer-deps
+RUN npm install express-session --save --legacy-peer-deps
+RUN npm install jsonwebtoken --save --legacy-peer-deps
+RUN npm install http --save --legacy-peer-deps
+RUN npm install web-vitals --save --legacy-peer-deps
+
+COPY --from=build /app/src/server ./src/server
+
+CMD ["node", "src/server/server.js"]

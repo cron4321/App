@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
 import { Link } from "react-router-dom";
 import Sidebar from "./Headrcomponets/Sidebar";
-import Alarm from "./Headrcomponets/Alram";
 import MenuIcon from "@mui/icons-material/Menu";
 import axios from "axios";
 
@@ -23,7 +22,7 @@ function Header() {
     localStorage.removeItem('userEmail');
     localStorage.removeItem('username');
     try {
-      await axios.post("http://3.37.37.81:3002/logout");
+      await axios.post("http://localhost:3002/logout");
       setUserEmail("");
       setUserNickname("");
       setIsLoggedIn(false);

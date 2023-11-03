@@ -1,5 +1,4 @@
 const express = require('express');
-const http = require('http');
 const socketIo = require('socket.io');
 const cors = require('cors');
 const mysql = require('mysql2');
@@ -7,6 +6,7 @@ const nodemailer = require('nodemailer');
 const bodyParser = require('body-parser');
 const session = require('express-session');
 const jwt = require('jsonwebtoken');
+const http = require('http');
 
 const app = express();
 const server = http.createServer(app);

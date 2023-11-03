@@ -1,14 +1,25 @@
-FROM node:14
-
+FROM node:14 AS build
 WORKDIR /app
-
-COPY . .
-
-WORKDIR ./
+COPY package*.json ./
 RUN npm install --save --legacy-peer-deps
+COPY . .
+RUN npm cache clean --force
 RUN npm run build
 
+FROM node:14
+WORKDIR /app
 EXPOSE 4000
 
-WORKDIR /app/src/server
-CMD ["node", "crawlserver.js"]
+RUN npm install express --save --legacy-peer-deps
+RUN npm install dotenv --save --legacy-peer-deps
+RUN npm install web-push --save --legacy-peer-deps
+RUN npm install body-parser --save --legacy-peer-deps
+RUN npm install cheerio --save --legacy-peer-deps
+RUN npm install axios --save --legacy-peer-deps
+RUN npm install cors --save --legacy-peer-deps
+RUN npm install path --save --legacy-peer-deps
+RUN npm install node-cron --save --legacy-peer-deps
+RUN npm install web-vitals --save --legacy-peer-deps
+COPY --from=build /app/src/server ./src/server
+
+CMD ["node", "src/server/crawlingserver.js"]
