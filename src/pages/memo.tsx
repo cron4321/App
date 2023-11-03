@@ -16,7 +16,7 @@ interface Memo {
 }
 
 const axios = Axios.create({
-  baseURL: "http://43.202.181.150:3002",
+  baseURL: "http://localhost:3002",
 });
 
 function MemoPage() {

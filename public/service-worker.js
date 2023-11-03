@@ -5,7 +5,7 @@ self.addEventListener("install", (event) => {
       return cache.addAll([
         "/PWAiconimg/icons/maskable_icon_x512.png",
         "/index.html",
-        "/favicon.ico"
+        "/favicon.ico",
       ]);
     })
   );
@@ -25,7 +25,9 @@ self.addEventListener("fetch", (event) => {
 
 self.addEventListener("push", (event) => {
   const payload = {
-    body: event.data.json().body
+    body: event.data.json().body,
   };
-  event.waitUntil(self.registration.showNotification("새 공지사항이 있습니다!", payload));
+  event.waitUntil(
+    self.registration.showNotification("새 공지사항이 있습니다!", payload)
+  );
 });
