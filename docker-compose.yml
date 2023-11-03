@@ -1,7 +1,7 @@
 version: '3'
 services:
   frontend:
-    image: project-front
+    image: penguingong/project-front
     build:
       context: ./
       dockerfile: Dockerfile-frontend
@@ -9,7 +9,7 @@ services:
       - "3000:3000"
 
   backend:
-    image: project-back
+    image: penguingong/project-back
     build:
       context: ./
       dockerfile: Dockerfile-backend
@@ -17,7 +17,7 @@ services:
       - "3002:3002"
 
   backend2:
-    image: project-back2
+    image: penguingong/project-back2
     build:
       context: ./
       dockerfile: Dockerfile-backend2
