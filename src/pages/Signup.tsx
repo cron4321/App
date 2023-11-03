@@ -65,7 +65,7 @@ function Signup() {
 
   const sendVerificationCode = async () => {
     try {
-      const response = await axios.post('http://43.202.181.150:3002/send-verification-email', { email: user.email });
+      const response = await axios.post('http://43.202.181.150:30700/send-verification-email', { email: user.email });
       if (response.status === 200) {
         setVerificationRequested(true);
       }
@@ -76,7 +76,7 @@ function Signup() {
 
   const checkDuplicate = async () => {
     try {
-      const response = await axios.post('http://43.202.181.150:3002/check-duplicate', {
+      const response = await axios.post('http://43.202.181.150:30700/check-duplicate', {
         email: user.email,
         username: user.username,
       });
@@ -107,7 +107,7 @@ function Signup() {
   const handleSignUp = async () => {
     if (isEmailValid && isPasswordValid && isPasswordsMatching && user.email && user.password) {
       try {
-        const response = await axios.post('http://43.202.181.150:3002/signup', user);
+        const response = await axios.post('http://43.202.181.150:30700/signup', user);
 
         if (response.status === 200) {
           setIsSignUpSuccessful(true);
