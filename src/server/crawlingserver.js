@@ -7,6 +7,7 @@ const cors = require("cors");
 const express = require("express");
 const path = require("path");
 const cron = require("node-cron");
+const mysql = require("mysql2");
 
 const app = express();
 const port = 4000;
@@ -15,24 +16,49 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, "public")));
 
+let previousResults = [];
 const subscriptions = [];
 const results = [];
-const newPush = [];
-let previousTitles = [];
-let newTitles = [];
+let newPush = [];
+
+// const connection = mysql.createConnection({
+//   host: "127.0.0.1",
+//   user: "testuser1",
+//   password: "1234",
+//   database: "test_db",
+//   port: 3306,
+// });
+
+// connection.connect((err) => {
+//   if (err) {
+//     console.error("Error connecting to MySQL:", err.message);
+//   } else {
+//     console.log("Connected to MySQL database");
+//   }
+// });
+
+// connection.query(
+//   `
+// CREATE TABLE IF NOT EXISTS subscriptions (
+//   id INT AUTO_INCREMENT PRIMARY KEY,
+//   user_id INT,
+//   subscription_data JSON
+// ) ENGINE=InnoDB DEFAULT CHARSET=utf8`
+// );
 
 async function crawlingserver() {
   const maxResults = 15;
 
   try {
     for (let currentPage = 1; results.length < maxResults; currentPage++) {
-      const currentTitles = previousTitles.slice();
       const url = `https://www.snu.ac.kr/snunow/notice/genernal?page=${currentPage}`;
       const response = await axios.get(url);
       const html = response.data;
       const $ = cheerio.load(html);
-
       const elements = $("table tbody tr");
+
+      let currentResults = previousResults.slice();
+      let newTitles = [];
 
       if (elements.length === 0) {
         break;
@@ -51,21 +77,23 @@ async function crawlingserver() {
           };
           results.push(elementData);
           // 새로운 글의 제목을 currentTitles 배열에 추가합니다.
-          currentTitles.push(elementData.title);
+          if (!currentResults.includes(elementData.title)) {
+            currentResults.push(elementData.title);
+          }
         }
       });
       // 새로운 글의 제목을 이전 제목과 비교하여 새 글만 추출합니다.
-      newTitles = currentTitles.filter(
-        (title) => !previousTitles.includes(title)
+      newTitles = currentResults.filter(
+        (title) => !previousResults.includes(title)
       );
       // 현재 제목을 이전 제목으로 업데이트합니다.
-      previousTitles = currentTitles;
+      previousResults = currentResults;
       newPush.push(...newTitles);
     }
-    newPush.reverse();
     console.log("새 공지사항:", newPush);
+
     if (newPush.length > 0) {
-        PushNotifications(newPush);
+      PushNotifications(newPush);
     } else console.log("새 공지사항이 없습니다.");
 
     app.get("/data", (req, res) => {
@@ -76,10 +104,9 @@ async function crawlingserver() {
   }
 }
 
-crawlingserver();
-
 app.listen(port, () => {
   console.log(`웹 서버가 ${port} 에서 실행 중입니다.`);
+  crawlingserver();
 });
 
 function cleanText(text) {
@@ -112,19 +139,25 @@ app.get("/vapidPublicKey", function (req, res) {
 
 app.post("/register", function (req, res) {
   const subscription = req.body.subscription;
+  const subscriptionString = JSON.stringify(subscription);
+
+  // connection.query(
+  //   "INSERT INTO subscriptions (user_id, subscription_data) VALUES (?, ?) ON DUPLICATE KEY UPDATE subscription_data = VALUES(subscription_data)",
+  //   [userId, subscriptionString]
+  // );
   subscriptions.push(subscription);
-  res.sendStatus(201);
+  res.status(201);
 });
 
-function PushNotifications(subscription) {
-  console.log("푸시 알림 전송 시작");
+function PushNotifications() {
   const payload = JSON.stringify({
     title: "새 공지사항이 있습니다!",
     body: newPush,
   });
   subscriptions.forEach((subscription) => {
+    console.log(subscription);
     webpush
-      .sendNotification(subscription)
+      .sendNotification(subscription, payload)
       .then(() => {
         console.log("푸시알림 전송 성공");
       })
