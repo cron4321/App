@@ -6,7 +6,7 @@ services:
       context: ./
       dockerfile: Dockerfile-frontend
     ports:
-      - "3000:3000"
+      - "30600:3000"
 
   backend:
     image: penguingong/project-back
@@ -14,7 +14,7 @@ services:
       context: ./
       dockerfile: Dockerfile-backend
     ports:
-      - "3002:3002"
+      - "30700:3002"
 
   backend2:
     image: penguingong/project-back2
@@ -22,4 +22,4 @@ services:
       context: ./
       dockerfile: Dockerfile-backend2
     ports:
-      - "4000:4000"
+      - "30800:4000"
