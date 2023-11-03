@@ -1,7 +1,7 @@
 version: '3'
 services:
   frontend:
-    container_name: docker-frontend
+    image: project-front
     build:
       context: ./
       dockerfile: Dockerfile-frontend
@@ -9,7 +9,7 @@ services:
       - "3000:3000"
 
   backend:
-    container_name: docker-backend
+    image: project-backend
     build:
       context: ./
       dockerfile: Dockerfile-backend
@@ -17,7 +17,7 @@ services:
       - "3002:3002"
 
   backend2:
-    container_name: docker-backend2
+    image: project-backend2
     build:
       context: ./
       dockerfile: Dockerfile-backend2
