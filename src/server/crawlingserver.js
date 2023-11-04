@@ -26,7 +26,9 @@ async function crawlingserver() {
   try {
     for (let currentPage = 1; results.length < maxResults; currentPage++) {
       const url = `https://www.snu.ac.kr/snunow/notice/genernal?page=${currentPage}`;
-      const response = await axios.get(url);
+      const response = await axios.get(url, {
+        maxRedirects: 5,
+      });
       const html = response.data;
       const $ = cheerio.load(html);
       const elements = $("table tbody tr");
@@ -49,17 +51,14 @@ async function crawlingserver() {
             date: cleanText($(element).find("td.col-date").text()),
           };
           results.push(elementData);
-          // 새로운 글의 제목을 currentTitles 배열에 추가합니다.
           if (!currentResults.includes(elementData.title)) {
             currentResults.push(elementData.title);
           }
         }
       });
-      // 새로운 글의 제목을 이전 제목과 비교하여 새 글만 추출합니다.
       newTitles = currentResults.filter(
         (title) => !previousResults.includes(title)
       );
-      // 현재 제목을 이전 제목으로 업데이트합니다.
       previousResults = currentResults;
       newPush.push(...newTitles);
     }
