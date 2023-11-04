@@ -16,7 +16,7 @@ interface Memo {
 }
 
 const axios = Axios.create({
-  baseURL: "http://localhost:3002", 
+  baseURL: "http://43.202.181.150:30700",
 });
 
 function MemoPage() {
@@ -222,9 +222,9 @@ const Memo = styled.div`
   padding: 10px;
   position: relative;
   background-color: #ffffff;
-  overflow: hidden; /* 내용을 넘어가지 않도록 함 */
-  text-overflow: ellipsis; /* 긴 텍스트를 ...으로 표시 */
-  white-space: nowrap; /* 줄 바꿈 없이 텍스트 표시 */
+  overflow: hidden; 
+  text-overflow: ellipsis; 
+  white-space: nowrap; 
 `;
 
 

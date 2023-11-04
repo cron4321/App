@@ -9,7 +9,7 @@ const socket = io('http://localhost:3002', {
   rejectUnauthorized: false,
   withCredentials: true,
   extraHeaders: {
-    'Access-Control-Allow-Origin': 'http://localhost:30595',
+    'Access-Control-Allow-Origin': 'http://43.202.181.150:30600',
   },
 });
 

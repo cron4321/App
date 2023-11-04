@@ -1,0 +1,25 @@
+version: '3'
+services:
+  frontend:
+    image: penguingong/project-front
+    build:
+      context: ./
+      dockerfile: Dockerfile-frontend
+    ports:
+      - "30600:3000"
+
+  backend:
+    image: penguingong/project-back
+    build:
+      context: ./
+      dockerfile: Dockerfile-backend
+    ports:
+      - "30700:3002"
+
+  backend2:
+    image: penguingong/project-back2
+    build:
+      context: ./
+      dockerfile: Dockerfile-backend2
+    ports:
+      - "30800:4000"
