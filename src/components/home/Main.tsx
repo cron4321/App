@@ -26,7 +26,9 @@ function Main({ mynumber }: { mynumber: number }) {
       <MainContent>
         <MainHeader>
           <MainTitle>공지사항</MainTitle>
-          <AddIcon sx={{ width: 30, height: 30, marginRight: "16px" }} />
+          <Link to="/board">
+            <AddIcon sx={{ width: 30, height: 30, marginRight: "16px" }} />
+          </Link>
         </MainHeader>
         {data.slice(0, mynumber).map((item, index) => (
           <SectionContents key={index}>

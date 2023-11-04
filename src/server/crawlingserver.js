@@ -7,7 +7,6 @@ const cors = require("cors");
 const express = require("express");
 const path = require("path");
 const cron = require("node-cron");
-const mysql = require("mysql2");
 
 const app = express();
 const port = 4000;
@@ -21,34 +20,9 @@ const subscriptions = [];
 const results = [];
 let newPush = [];
 
-// const connection = mysql.createConnection({
-//   host: "127.0.0.1",
-//   user: "testuser1",
-//   password: "1234",
-//   database: "test_db",
-//   port: 3306,
-// });
-
-// connection.connect((err) => {
-//   if (err) {
-//     console.error("Error connecting to MySQL:", err.message);
-//   } else {
-//     console.log("Connected to MySQL database");
-//   }
-// });
-
-// connection.query(
-//   `
-// CREATE TABLE IF NOT EXISTS subscriptions (
-//   id INT AUTO_INCREMENT PRIMARY KEY,
-//   user_id INT,
-//   subscription_data JSON
-// ) ENGINE=InnoDB DEFAULT CHARSET=utf8`
-// );
-
 async function crawlingserver() {
   const maxResults = 15;
-
+  let newPush = [];
   try {
     for (let currentPage = 1; results.length < maxResults; currentPage++) {
       const url = `https://www.snu.ac.kr/snunow/notice/genernal?page=${currentPage}`;
@@ -58,7 +32,6 @@ async function crawlingserver() {
       const elements = $("table tbody tr");
 
       let currentResults = previousResults.slice();
-      let newTitles = [];
 
       if (elements.length === 0) {
         break;
@@ -91,7 +64,6 @@ async function crawlingserver() {
       newPush.push(...newTitles);
     }
     console.log("새 공지사항:", newPush);
-
     if (newPush.length > 0) {
       PushNotifications(newPush);
     } else console.log("새 공지사항이 없습니다.");
@@ -139,13 +111,8 @@ app.get("/vapidPublicKey", function (req, res) {
 
 app.post("/register", function (req, res) {
   const subscription = req.body.subscription;
-  const subscriptionString = JSON.stringify(subscription);
-
-  // connection.query(
-  //   "INSERT INTO subscriptions (user_id, subscription_data) VALUES (?, ?) ON DUPLICATE KEY UPDATE subscription_data = VALUES(subscription_data)",
-  //   [userId, subscriptionString]
-  // );
   subscriptions.push(subscription);
+  console.log("사용자 추가됨")
   res.status(201);
 });
 

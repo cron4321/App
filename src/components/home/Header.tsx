@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
 import { Link } from "react-router-dom";
-import Sidebar from "./Headrcomponets/Sidebar";
-import Alarm from "./Headrcomponets/Alram";
+import Sidebar from "./Sidebar";
 import MenuIcon from "@mui/icons-material/Menu";
 import axios from "axios";
 
