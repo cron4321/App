@@ -16,7 +16,7 @@ interface Memo {
 }
 
 const axios = Axios.create({
-  baseURL: "http://localhost:3002",
+  baseURL: "http://localhost:3002", 
 });
 
 function MemoPage() {
@@ -28,25 +28,14 @@ function MemoPage() {
   const [content, setContent] = useState("");
 
   useEffect(() => {
-    const userToken = localStorage.getItem('userToken');
-    if (userToken) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${userToken}`;
-    }
-
-    axios
-      .get("/api/memos")
+    axios.get("/api/memos")
       .then((response) => {
         setMemos(response.data);
       })
       .catch((error) => {
-        if (error.response && error.response.status === 401) {
-          console.error("401 Unauthorized 에러가 발생했습니다.");
-        } else {
-          console.error("메모 데이터 불러오기 오류:", error);
-        }
+        console.error("메모 데이터 불러오기 오류:", error);
       });
   }, []);
-
 
   const openModal = () => {
     setModalIsOpen(true);
@@ -71,36 +60,23 @@ function MemoPage() {
     if (title || content) {
       const memoData = { title, content };
       if (modalEditMode) {
-        axios
-          .put(`/api/memos/${memos[modalMemoIndex].id}`, memoData)
+        axios.put(`/api/memos/${memos[modalMemoIndex].id}`, memoData)
           .then(() => {
             const updatedMemos = [...memos];
-            updatedMemos[modalMemoIndex] = {
-              ...memoData,
-              id: memos[modalMemoIndex].id,
-            };
+            updatedMemos[modalMemoIndex] = { ...memoData, id: memos[modalMemoIndex].id };
             setMemos(updatedMemos);
           })
           .catch((error) => {
-            if (error.response && error.response.status === 401) {
-              console.error("401 Unauthorized 에러가 발생했습니다.");
-            } else {
-              console.error("메모 데이터 수정 오류:", error);
-            }
+            console.error("메모 데이터 수정 오류:", error);
           });
       } else {
-        axios
-          .post("/api/memos", memoData)
+        axios.post("/api/memos", memoData)
           .then((response) => {
-            const newMemo = { ...memoData, id: response.data.insertId };
+            const newMemo = { ...memoData, id: response.data.insertId }; 
             setMemos([...memos, newMemo]);
           })
           .catch((error) => {
-            if (error.response && error.response.status === 401) {
-              console.error("401 Unauthorized 에러가 발생했습니다.");
-            } else {
-              console.error("메모 데이터 추가 오류:", error);
-            }
+            console.error("메모 데이터 추가 오류:", error);
           });
       }
       setTitle("");
@@ -116,28 +92,17 @@ function MemoPage() {
         console.error("올바르지 않은 메모 ID:", memoIdToDelete);
         return;
       }
-      axios
-        .delete(`/api/memos/${memoIdToDelete}`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('userToken')}`,
-          },
-        })
+      axios.delete(`/api/memos/${memoIdToDelete}`)
         .then(() => {
-          const updatedMemos = memos.filter(
-            (memo, index) => index !== modalMemoIndex
-          );
+          const updatedMemos = memos.filter((memo, index) => index !== modalMemoIndex);
           setMemos(updatedMemos);
-          closeModal(); 
         })
         .catch((error) => {
           console.error("메모 데이터 삭제 오류:", error);
-  
-          if (error.response && error.response.status === 401) {
-          }
         });
+      closeModal();
     }
   };
-  
 
   return (
     <AppContainer>
@@ -150,7 +115,7 @@ function MemoPage() {
       </MemoHeader>
       <Main>
         {memos.map((memo, index) => (
-          <Memo key={memo.id} onClick={() => openEditModal(index)}>
+          <Memo key={index} onClick={() => openEditModal(index)}>
             <MemoTitle>{memo.title}</MemoTitle>
             <MemoContent>{memo.content}</MemoContent>
           </Memo>
@@ -203,7 +168,6 @@ function MemoPage() {
     </AppContainer>
   );
 }
-
 
 const AppContainer = styled.div`
   display: flex;
