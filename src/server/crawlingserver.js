@@ -85,7 +85,7 @@ function cleanText(text) {
   return text.replace(/\n/g, "").replace(/\s+/g, " ").trim();
 }
 
-cron.schedule("*/1 * * * *", () => {
+cron.schedule("0 * * * *", () => {
   crawlingserver();
   console.log("crawling");
 });
@@ -112,7 +112,7 @@ app.get("/vapidPublicKey", function (req, res) {
 app.post("/register", function (req, res) {
   const subscription = req.body.subscription;
   subscriptions.push(subscription);
-  console.log("사용자 추가됨")
+  console.log("사용자 추가됨");
   res.status(201);
 });
 
