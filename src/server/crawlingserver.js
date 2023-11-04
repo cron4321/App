@@ -7,6 +7,7 @@ const cors = require("cors");
 const express = require("express");
 const path = require("path");
 const cron = require("node-cron");
+
 const app = express();
 const port = 4000;
 
@@ -29,10 +30,13 @@ async function crawlingserver() {
       const html = response.data;
       const $ = cheerio.load(html);
       const elements = $("table tbody tr");
+
       let currentResults = previousResults.slice();
+
       if (elements.length === 0) {
         break;
       }
+
       elements.each((index, element) => {
         if (results.length < maxResults) {
           const elementData = {
@@ -45,19 +49,21 @@ async function crawlingserver() {
             date: cleanText($(element).find("td.col-date").text()),
           };
           results.push(elementData);
+          // 새로운 글의 제목을 currentTitles 배열에 추가합니다.
           if (!currentResults.includes(elementData.title)) {
             currentResults.push(elementData.title);
           }
         }
       });
+      // 새로운 글의 제목을 이전 제목과 비교하여 새 글만 추출합니다.
       newTitles = currentResults.filter(
         (title) => !previousResults.includes(title)
       );
+      // 현재 제목을 이전 제목으로 업데이트합니다.
       previousResults = currentResults;
       newPush.push(...newTitles);
     }
     console.log("새 공지사항:", newPush);
-
     if (newPush.length > 0) {
       PushNotifications(newPush);
     } else console.log("새 공지사항이 없습니다.");
@@ -106,7 +112,7 @@ app.get("/vapidPublicKey", function (req, res) {
 app.post("/register", function (req, res) {
   const subscription = req.body.subscription;
   subscriptions.push(subscription);
-  console.log("사용자 추가됨");
+  console.log("사용자 추가됨")
   res.status(201);
 });
 

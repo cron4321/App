@@ -1,11 +1,13 @@
 import styled from "styled-components";
 import Main from "../components/home/Main";
 import React from "react";
+import Header from "../components/home/Header";
 
 function BoardPage() {
   return (
     <Container>
-      <Main mynumber={15}/>
+      <Header />
+      <Main mynumber={15} />
     </Container>
   );
 }
