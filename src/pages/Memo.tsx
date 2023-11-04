@@ -28,15 +28,25 @@ function MemoPage() {
   const [content, setContent] = useState("");
 
   useEffect(() => {
+    const userToken = localStorage.getItem('userToken');
+    if (userToken) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${userToken}`;
+    }
+
     axios
       .get("/api/memos")
       .then((response) => {
         setMemos(response.data);
       })
       .catch((error) => {
-        console.error("메모 데이터 불러오기 오류:", error);
+        if (error.response && error.response.status === 401) {
+          console.error("401 Unauthorized 에러가 발생했습니다.");
+        } else {
+          console.error("메모 데이터 불러오기 오류:", error);
+        }
       });
   }, []);
+
 
   const openModal = () => {
     setModalIsOpen(true);
@@ -72,7 +82,11 @@ function MemoPage() {
             setMemos(updatedMemos);
           })
           .catch((error) => {
-            console.error("메모 데이터 수정 오류:", error);
+            if (error.response && error.response.status === 401) {
+              console.error("401 Unauthorized 에러가 발생했습니다.");
+            } else {
+              console.error("메모 데이터 수정 오류:", error);
+            }
           });
       } else {
         axios
@@ -82,7 +96,11 @@ function MemoPage() {
             setMemos([...memos, newMemo]);
           })
           .catch((error) => {
-            console.error("메모 데이터 추가 오류:", error);
+            if (error.response && error.response.status === 401) {
+              console.error("401 Unauthorized 에러가 발생했습니다.");
+            } else {
+              console.error("메모 데이터 추가 오류:", error);
+            }
           });
       }
       setTitle("");
@@ -99,19 +117,27 @@ function MemoPage() {
         return;
       }
       axios
-        .delete(`/api/memos/${memoIdToDelete}`)
+        .delete(`/api/memos/${memoIdToDelete}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('userToken')}`,
+          },
+        })
         .then(() => {
           const updatedMemos = memos.filter(
             (memo, index) => index !== modalMemoIndex
           );
           setMemos(updatedMemos);
+          closeModal(); 
         })
         .catch((error) => {
           console.error("메모 데이터 삭제 오류:", error);
+  
+          if (error.response && error.response.status === 401) {
+          }
         });
-      closeModal();
     }
   };
+  
 
   return (
     <AppContainer>
@@ -124,7 +150,7 @@ function MemoPage() {
       </MemoHeader>
       <Main>
         {memos.map((memo, index) => (
-          <Memo key={index} onClick={() => openEditModal(index)}>
+          <Memo key={memo.id} onClick={() => openEditModal(index)}>
             <MemoTitle>{memo.title}</MemoTitle>
             <MemoContent>{memo.content}</MemoContent>
           </Memo>
@@ -177,6 +203,7 @@ function MemoPage() {
     </AppContainer>
   );
 }
+
 
 const AppContainer = styled.div`
   display: flex;
@@ -231,25 +258,27 @@ const Memo = styled.div`
   padding: 10px;
   position: relative;
   background-color: #ffffff;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow: hidden; 
+  text-overflow: ellipsis; 
+  white-space: nowrap; 
 `;
 
+
 const MemoTitle = styled.h3`
-  max-height: 2.4em;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  max-height: 2.4em; 
+  overflow: hidden; 
+  text-overflow: ellipsis; 
   white-space: normal;
-  margin-bottom: 8px;
+  margin-bottom: 8px; 
 `;
 
 const MemoContent = styled.p`
-  max-height: 7em;
+  max-height: 7.0em;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: pre-wrap;
+  text-overflow: ellipsis; 
+  white-space: pre-wrap; 
 `;
+
 
 const ModalContainer = styled.div`
   display: flex;
