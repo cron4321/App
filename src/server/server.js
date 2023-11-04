@@ -435,6 +435,8 @@ app.get('/selected-school', requireLogin, (req, res) => {
   });
 });
 
+
+
 const port = process.env.PORT || 3002;
 server.listen(port, () => {
   console.log(`Server is running on port ${port}`);
