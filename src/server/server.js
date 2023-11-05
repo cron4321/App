@@ -32,11 +32,11 @@ let db;
 
 function connectToDatabase() {
   db = mysql.createConnection({
-    host: '192.168.104.1',
+    host: '52.78.105.126',
     user: '2team',
     password: '1234',
     database: 'projectdb',
-    port: 3306,
+    port: 30595,
   });
 
   db.connect((err) => {
@@ -228,11 +228,11 @@ app.post('/logout', (req, res) => {
 });
 
 const connection = mysql.createConnection({
-  host: '192.168.104.1',
-  user: '2team',
-  password: '1234',
-  database: 'projectdb',
-  port: 3306,
+    host: '52.78.105.126',
+    user: '2team',
+    password: '1234',
+    database: 'projectdb',
+    port: 30595,
 });
 
 connection.connect((err) => {
